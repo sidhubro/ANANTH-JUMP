@@ -215,7 +215,8 @@
       <div class="row">
         <button class="btn" onclick="startGame()">START</button>
         <button class="btn" onclick="alert('Rate Game')">RATE</button>
-        <button class="btn" onclick="alert('Score: 0')">SCORE</button>
+        <button class="btn" onclick="showHighScore()">SCORE</button>
+        <button class="btn" id="deviceSwitchBtn">Switch Device</button>
       </div>
       <div class="start-footer">© SIDHU Studios 2025</div>
       <div class="footer-left-content">
@@ -279,7 +280,28 @@
   function sun(cx, cy, r) { for (let rr = r; rr > 0; rr--) { rect(cx - rr, cy - rr, rr * 2, 1, '#ffe66d'); } }
   function drawCloud(cl) { rect(cl.x, cl.y, cl.w, cl.h, '#fff'); }
   function hills() { for (let i = 0; i < 3; i++) { const col = i == 0 ? '#316b57' : i == 1 ? '#2f705b' : '#27654f'; const y = BASE_H * 0.70 + i * 6; for (let x = 0; x < BASE_W; x += 4) { rect(x, y, 6, BASE_H - y, col); } } }
-  function skyline() { const baseY = BASE_H * 0.74; buildings.forEach(b => { rect(b.x, baseY - b.h, b.w, b.h, '#4a7a9c'); }); }
+  function drawBuilding(x, y, w, h) {
+    // Draw main building
+    rect(x, y, w, h, '#4a7a9c');
+    // Add roof
+    const roofH = Math.max(2, Math.floor(h / 10));
+    rect(x - 1, y - roofH, w + 2, roofH, '#2a4a5c');
+    // Add windows
+    const windowW = Math.max(2, Math.floor(w / 4));
+    const windowH = Math.max(2, Math.floor(h / 6));
+    const numWindows = Math.floor(w / (windowW + 2));
+    for (let i = 0; i < numWindows; i++) {
+      const wx = x + 1 + i * (windowW + 1);
+      const wy = y + 2;
+      if (wx + windowW <= x + w && wy + windowH <= y + h) {
+        // Draw window frame
+        rect(wx - 1, wy - 1, windowW + 2, windowH + 2, '#000');
+        // Draw window
+        rect(wx, wy, windowW, windowH, '#f0f0f0');
+      }
+    }
+  }
+  function skyline() { const baseY = BASE_H * 0.74; buildings.forEach(b => { drawBuilding(b.x, baseY - b.h, b.w, b.h); }); }
   function ground() { const y = BASE_H * 0.82; rect(0, y - 3, BASE_W, 3, '#5c943d'); rect(0, y, BASE_W, BASE_H - y, '#ded895'); }
 
   function step() {
@@ -300,6 +322,19 @@
   }
   step();
 })();
+</script>
+
+<script>
+function showHighScore() {
+  const name = prompt("Enter your name:");
+  if (name) {
+    window.playerName = name.trim();
+    const key = "highscore_" + window.playerName;
+    const score = localStorage.getItem(key) || 0;
+    alert(`High Score for ${window.playerName}: ${score}`);
+  }
+}
+window.showHighScore = showHighScore;
 </script>
 
 <div id="gameContainer" style="display:none;">
@@ -443,7 +478,7 @@
   let spawnMin = 900, spawnMax = 1500;
   let flyerGap = 3800;
   let lastSpawn = 0, lastFlyerSpawn = 0;
-  let score = 0, best = Number(localStorage.getItem("animal_best_uhd") || 0);
+  let score = 0, best = 0;
   const player = { x: 92, y: 0, w: 78, h: 56, vy: 0, onGround: true };
   const obstacles = []; // {x,y,w,h,type}
   const flyers = [];    // {x,y,w,h,vx,flap,type}
@@ -455,6 +490,7 @@
 
   // Reset/start
   function reset() {
+    best = Number(localStorage.getItem("highscore_" + (window.playerName || "Anonymous")) || 0);
     running = true; gameOver = false;
     t = 0;
     gravity = parseFloat(gravitySlider.value);
@@ -668,7 +704,7 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
   function endGame() {
     running = false; gameOver = true;
     best = Math.max(best, Math.floor(score));
-    localStorage.setItem("animal_best_uhd", String(best));
+    localStorage.setItem("highscore_" + (window.playerName || "Anonymous"), String(best));
   }
 
   function loseLife(){
@@ -1423,6 +1459,10 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     }
   }
   function startGame() {
+    if (!window.playerName) {
+      const name = prompt("Enter your name:");
+      window.playerName = name ? name.trim() : "Anonymous";
+    }
     const ui = document.getElementById("ui");
     if (ui) ui.style.display = "none";
     const root = document.getElementById("root");
@@ -1711,9 +1751,53 @@ if ("serviceWorker" in navigator) {
     .then(() => console.log("Service Worker registered"));
 }
 </script>
+
+<script>
+let currentMode = "pc"; // default
+
+document.getElementById("deviceSwitchBtn").addEventListener("click", () => {
+  if (currentMode === "pc") {
+    enableMobileMode();
+    currentMode = "mobile";
+    document.getElementById("deviceSwitchBtn").textContent = "Switch to PC";
+  } else {
+    enablePCMode();
+    currentMode = "pc";
+    document.getElementById("deviceSwitchBtn").textContent = "Switch to Mobile";
+  }
+});
+
+function enableMobileMode() {
+  // Fullscreen
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen();
+  }
+  // Adjust canvas/game size
+  const gameCanvas = document.getElementById("game");
+  if (gameCanvas) {
+    gameCanvas.style.width = "100vw";
+    gameCanvas.style.height = "100vh";
+  }
+  // Touch controls can be enabled here
+  console.log("Mobile mode enabled");
+}
+
+function enablePCMode() {
+  // Exit fullscreen
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+  // Reset canvas/game size
+  const gameCanvas = document.getElementById("game");
+  if (gameCanvas) {
+    gameCanvas.style.width = "800px";
+    gameCanvas.style.height = "600px";
+  }
+  // Keyboard controls remain active
+  console.log("PC mode enabled");
+}
 </script>
+
 </body>
 </html>
-
-
 
