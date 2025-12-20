@@ -148,6 +148,20 @@
   .pin-modal .pin-input { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #ffffff22; background:#081a26; color:#fff; font-size:16px; }
   .pin-modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
   .pin-modal .btn { background:#0aa0ff; border:none; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
+  /* Rating modal */
+  .rating-modal {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100003;
+    background: rgba(0,0,0,0.6);
+  }
+  .rating-modal .box {
+    width: 320px; max-width: 92%; background: linear-gradient(180deg,#0e2a3a,#08212b); border-radius: 12px; padding: 16px; color:#e6f2ff; box-shadow:0 12px 40px rgba(0,0,0,0.6);
+  }
+  .rating-modal .box h3 { margin:0 0 8px; font-size:16px; }
+  .rating-modal .stars { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+  .rating-modal .star { font-size: 2rem; cursor: pointer; color: #666; transition: color 0.2s; }
+  .rating-modal .star.selected, .rating-modal .star:hover { color: #ffd700; }
+  .rating-modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
+  .rating-modal .btn { background:#0aa0ff; border:none; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
   .pin-modal .btn.secondary { background:#243744; }
   .pin-modal .error { color:#ff8b8b; margin-top:8px; font-size:13px; min-height:18px; }
   /* Heart pop animation */
@@ -191,6 +205,23 @@
   </div>
 </div>
 
+<!-- Rating modal -->
+<div class="rating-modal" id="ratingModal" aria-hidden="true">
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="ratingTitle">
+    <h3 id="ratingTitle">Rate the Game</h3>
+    <div class="stars" id="stars">
+      <span class="star" data-rating="1" onclick="selectStar(1)">★</span>
+      <span class="star" data-rating="2" onclick="selectStar(2)">★</span>
+      <span class="star" data-rating="3" onclick="selectStar(3)">★</span>
+      <span class="star" data-rating="4" onclick="selectStar(4)">★</span>
+      <span class="star" data-rating="5" onclick="selectStar(5)">★</span>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" onclick="document.getElementById('ratingModal').style.display = 'none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
   console.log("Page loading...");
   window.__pageStarted = true;
@@ -214,7 +245,7 @@
       </div>
       <div class="row">
         <button class="btn" onclick="startGame()">START</button>
-        <button class="btn" onclick="alert('Rate Game')">RATE</button>
+        <button class="btn" onclick="showRating()">RATE</button>
         <button class="btn" onclick="showHighScore()">SCORE</button>
         <button class="btn" id="deviceSwitchBtn">Switch Device</button>
       </div>
@@ -227,6 +258,21 @@
       <p class="copyright-notice">All content © SIDHU Studios 2025. Unauthorized reproduction or distribution is prohibited.</p>
     </div>
   </div>
+</div>
+
+<div id="leaderboard" style="
+  position: absolute; top: 60px; right: 20px;
+  width: 240px; background: #fff8dc;
+  border: 4px solid #d97706; border-radius: 12px;
+  padding: 12px; font-family: monospace;
+  color: #111; box-shadow: 0 0 12px rgba(0,0,0,0.3);
+">
+  <div style="display: flex; justify-content: center; align-items: center; font-size: 0.8rem; margin-bottom: 10px;">
+    <span style="font-size: 1.2rem; margin: 0 6px;">⭐</span>
+    <span style="background: #dc2626; color: white; padding: 4px 8px; border-radius: 6px; font-weight: bold;">LEADERBOARD</span>
+    <span style="font-size: 1.2rem; margin: 0 6px;">⭐</span>
+  </div>
+  <ul id="leaderboard-list" style="list-style: none; padding: 0; margin: 0;"></ul>
 </div>
 
 <script>
@@ -335,6 +381,59 @@ function showHighScore() {
   }
 }
 window.showHighScore = showHighScore;
+
+function showRating() {
+  document.getElementById('ratingModal').style.display = 'flex';
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+}
+
+function selectStar(rating) {
+  document.querySelectorAll('.star').forEach((s, i) => {
+    if (i < rating) s.classList.add('selected');
+    else s.classList.remove('selected');
+  });
+  const username = prompt("Enter your username:");
+  if (username) {
+    let ratings = JSON.parse(localStorage.getItem('ratings') || "{}");
+    ratings[username.trim()] = rating;
+    localStorage.setItem('ratings', JSON.stringify(ratings));
+    alert(`Thank you for rating ${rating} stars, ${username.trim()}!`);
+  }
+  document.getElementById('ratingModal').style.display = 'none';
+}
+</script>
+
+<script>
+// Load scores from localStorage
+let bestScores = JSON.parse(localStorage.getItem('bestScores') || "{}");
+
+// Render leaderboard
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  list.innerHTML = '';
+
+  const sorted = Object.entries(bestScores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6); // top 6
+
+  sorted.forEach(([name, score], index) => {
+    const li = document.createElement('li');
+    li.style.display = 'flex';
+    li.style.justifyContent = 'space-between';
+    li.style.alignItems = 'center';
+    li.style.fontSize = '0.7rem';
+    li.style.margin = '4px 0';
+    li.style.background = '#fef3c7';
+    li.style.padding = '4px 6px';
+    li.style.borderRadius = '6px';
+    li.style.border = '1px solid #fbbf24';
+    li.innerHTML = `<span>PLAYER ${index + 1}</span> <span>🟡 ${score}</span>`;
+    list.appendChild(li);
+  });
+}
+
+// Call once when game starts
+renderLeaderboard();
 </script>
 
 <div id="gameContainer" style="display:none;">
@@ -705,6 +804,9 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     running = false; gameOver = true;
     best = Math.max(best, Math.floor(score));
     localStorage.setItem("highscore_" + (window.playerName || "Anonymous"), String(best));
+    bestScores[window.playerName || "Anonymous"] = Math.max(bestScores[window.playerName || "Anonymous"] || 0, best);
+    localStorage.setItem('bestScores', JSON.stringify(bestScores));
+    renderLeaderboard();
   }
 
   function loseLife(){
