@@ -77,6 +77,28 @@
   .row { display:flex; gap:12px; }
   .btn { background:#00aaff; color:#fff; padding:12px 22px; border:none; border-radius:8px; box-shadow:0 0 12px #00e600; cursor:pointer; font-size:14px; }
   .btn:hover { transform:scale(1.08); box-shadow:0 0 16px #00e600; }
+  #mode-select {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff8dc;
+    border: 4px solid #d97706;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 12px rgba(0,0,0,0.3);
+    z-index: 10001;
+  }
+  #mode-select button {
+    display: block;
+    margin: 8px auto;
+    padding: 10px 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid #111;
+    background: #fef3c7;
+    cursor: pointer;
+  }
   .start-footer { position:absolute; bottom:35px; width:100%; text-align:center; font-size:10px; opacity:0.7; }
   .footer-left-content { position:absolute; bottom:50px; left:20px; max-width:300px; text-align:left; z-index: 10; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; }
   .footer-left-content .game-intro-title { font-size: 14px; color: #e6f2ff; margin: 0 0 4px 0; }
@@ -245,6 +267,7 @@
       </div>
       <div class="row">
         <button class="btn" onclick="startGame()">START</button>
+        <button class="btn" onclick="showModes()">MODES</button>
         <button class="btn" onclick="showRating()">RATE</button>
         <button class="btn" onclick="showHighScore()">SCORE</button>
         <button class="btn" id="deviceSwitchBtn">Switch Device</button>
@@ -258,6 +281,14 @@
       <p class="copyright-notice">All content © SIDHU Studios 2025. Unauthorized reproduction or distribution is prohibited.</p>
     </div>
   </div>
+</div>
+
+<!-- Mode selection popup -->
+<div id="mode-select" style="display:none;">
+  <h2>Select Mode</h2>
+  <button onclick="startSinglePlayer()">Single Player</button>
+  <button onclick="startMultiplayer()">Multiplayer</button>
+  <button onclick="closeModes()">Back</button>
 </div>
 
 <div id="leaderboard" style="
@@ -400,6 +431,16 @@ function selectStar(rating) {
     alert(`Thank you for rating ${rating} stars, ${username.trim()}!`);
   }
   document.getElementById('ratingModal').style.display = 'none';
+}
+
+function showModes() {
+  document.getElementById('mode-select').style.display = 'block';
+  document.getElementById('ui').style.display = 'none';
+}
+
+function closeModes() {
+  document.getElementById('mode-select').style.display = 'none';
+  document.getElementById('ui').style.display = 'flex';
 }
 </script>
 
@@ -583,9 +624,41 @@ renderLeaderboard();
   const flyers = [];    // {x,y,w,h,vx,flap,type}
   const particles = [];
 
+  // Multiplayer
+  let isMultiplayer = false;
+  let socket;
+  let username;
+  let otherPlayers = {};
+
   // Utils
   const rand = (a,b)=>Math.random()*(b-a)+a;
   const overlap = (ax,ay,aw,ah,bx,by,bw,bh)=>ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+
+  // Multiplayer
+  function initMultiplayer() {
+    socket = new WebSocket('ws://localhost:8080');
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type:'join', username }));
+    };
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'state') {
+        otherPlayers = data.players;
+        // Remove self from otherPlayers
+        delete otherPlayers[username];
+      }
+    };
+  }
+
+  function sendState() {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        type:'update',
+        username,
+        state: { x: player.x, y: player.y, score }
+      }));
+    }
+  }
 
   // Reset/start
   function reset() {
@@ -894,6 +967,7 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     flyers.forEach(drawFlyer);
 
     drawPlayer();
+    drawOtherPlayers();
     drawParticles();
     drawHUD(m);
   }
@@ -1429,8 +1503,27 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.beginPath(); ctx.ellipse(x + w*0.46, groundY + 6, 26*shadowScale, 6*shadowScale, 0, 0, Math.PI*2); ctx.fill();
 
-    // Draw the elephant sprite
-    drawElephant(x, y, w, h);
+    // Draw the selected animal sprite
+    const animal = animalSelect.value;
+    if (animal === "lion") {
+      drawLion(x, y, w, h);
+    } else if (animal === "deer") {
+      drawDeer(x, y, w, h);
+    } else {
+      drawElephant(x, y, w, h);
+    }
+  }
+
+  function drawOtherPlayers() {
+    Object.entries(otherPlayers).forEach(([name, p]) => {
+      // Draw other players as simple rectangles for now
+      ctx.fillStyle = 'red';
+      ctx.fillRect(p.x, p.y, player.w, player.h);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(name, p.x + player.w / 2, p.y - 5);
+    });
   }
 
   function drawParticles() {
@@ -1445,7 +1538,7 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     ctx.arcTo(x+w,y+h, x,y+h, r);
     ctx.arcTo(x,y+h, x,y, r);
     ctx.arcTo(x,y, x+w,y, r);
-    if (fill) ctx.fill(); else ctx.stroke();
+    if (fill) ctx.fill(); else ctx.stroke(); 
   }
   function drawElephant(x,y,w,h){
     ctx.fillStyle = "#93a3b8";
@@ -1492,6 +1585,34 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     roundRect(x + 8,  y + h*0.70, 10, 12 + step, 3, true);
     roundRect(x + 26, y + h*0.70, 10, 12 - step, 3, true);
     roundRect(x + 42, y + h*0.70, 10, 12 + step, 3, true);
+  }
+  function drawDeer(x,y,w,h){
+    ctx.fillStyle = "#8B4513";
+    roundRect(x, y+8, w*0.70, h*0.60, 10, true);
+    ctx.fillStyle = "#654321";
+    roundRect(x + w*0.50 - 6, y - 2, w*0.36 + 12, h*0.36 + 8, 12, true);
+    ctx.fillStyle = "#8B4513";
+    roundRect(x + w*0.54, y + 4, w*0.30, h*0.28, 10, true);
+    ctx.fillStyle = "#000";
+    ctx.beginPath(); ctx.arc(x + w*0.78, y + h*0.20, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "#8B4513"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x+6, y+h*0.55); ctx.quadraticCurveTo(x-10, y+h*0.40, x-4, y+h*0.30); ctx.stroke();
+    ctx.fillStyle = "#654321"; ctx.beginPath(); ctx.arc(x-4, y+h*0.30, 3, 0, Math.PI*2); ctx.fill();
+    const step = Math.sin(t * 0.02) * (player.onGround ? 1 : 0.3);
+    ctx.fillStyle = "#8B4513";
+    roundRect(x + 8,  y + h*0.70, 10, 12 + step, 3, true);
+    roundRect(x + 26, y + h*0.70, 10, 12 - step, 3, true);
+    roundRect(x + 42, y + h*0.70, 10, 12 + step, 3, true);
+    // Add antlers
+    ctx.strokeStyle = "#654321"; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + w*0.60, y - 4);
+    ctx.lineTo(x + w*0.65, y - 12);
+    ctx.moveTo(x + w*0.65, y - 12);
+    ctx.lineTo(x + w*0.70, y - 8);
+    ctx.moveTo(x + w*0.65, y - 12);
+    ctx.lineTo(x + w*0.62, y - 16);
+    ctx.stroke();
   }
 
   // -------- HUD --------
@@ -1554,6 +1675,7 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
 
       update(dt);
       render();
+      if (isMultiplayer) sendState();
 
       if (running) requestAnimationFrame(loop);
     } catch (err) {
@@ -1596,9 +1718,30 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     if (backBtn) backBtn.style.display = "none";
   }
   
+  function startSinglePlayer() {
+    document.getElementById('mode-select').style.display = 'none';
+    isMultiplayer = false;
+    // Start the game as single player
+    startGame();
+  }
+
+  function startMultiplayer() {
+    document.getElementById('mode-select').style.display = 'none';
+    isMultiplayer = true;
+    // Prompt for name here
+    const name = prompt("Enter your name:");
+    window.playerName = name ? name.trim() : "Anonymous";
+    username = window.playerName;
+    initMultiplayer();
+    // Start the game
+    startGame();
+  }
+  
   // expose for inline onclick handlers
   window.startGame = startGame;
   window.backToStart = backToStart;
+  window.startSinglePlayer = startSinglePlayer;
+  window.startMultiplayer = startMultiplayer;
 
   // pause toggle
   function togglePause(){
@@ -1902,4 +2045,3 @@ function enablePCMode() {
 
 </body>
 </html>
-
