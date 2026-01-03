@@ -99,6 +99,15 @@
     background: #fef3c7;
     cursor: pointer;
   }
+  #room-popup, #mode-select {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #fff8dc; border: 4px solid #d97706; border-radius: 12px;
+    padding: 16px; text-align: center;
+  }
+  #room-popup input { padding: 8px; margin: 4px; border: 2px solid #111; border-radius: 6px; }
+  #room-popup button, #mode-select button {
+    padding: 8px 12px; margin: 6px; border-radius: 8px; border: 2px solid #111; background: #fef3c7; cursor: pointer;
+  }
   .start-footer { position:absolute; bottom:35px; width:100%; text-align:center; font-size:10px; opacity:0.7; }
   .footer-left-content { position:absolute; bottom:50px; left:20px; max-width:300px; text-align:left; z-index: 10; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; }
   .footer-left-content .game-intro-title { font-size: 14px; color: #e6f2ff; margin: 0 0 4px 0; }
@@ -287,8 +296,21 @@
 <div id="mode-select" style="display:none;">
   <h2>Select Mode</h2>
   <button onclick="startSinglePlayer()">Single Player</button>
-  <button onclick="startMultiplayer()">Multiplayer</button>
+  <button onclick="showRoomOptions()">Multiplayer (Private Room)</button>
   <button onclick="closeModes()">Back</button>
+</div>
+
+<!-- Room popup -->
+<div id="room-popup" style="display:none;">
+  <h3>Private Room</h3>
+  <button onclick="createRoomFlow()">Create room</button>
+  <div style="margin-top:8px;">
+    <input id="join-key" placeholder="Enter passkey" />
+    <input id="join-username" placeholder="Enter username" />
+    <button onclick="joinRoomFlow()">Join room</button>
+  </div>
+  <button onclick="closeRoomPopup()">Close</button>
+  <div id="room-info" style="margin-top:8px;"></div>
 </div>
 
 <div id="leaderboard" style="
@@ -442,7 +464,103 @@ function closeModes() {
   document.getElementById('mode-select').style.display = 'none';
   document.getElementById('ui').style.display = 'flex';
 }
-</script>
+
+let socket = null;
+let passkey = null;
+let username = null;
+let otherPlayers = {};
+
+function showRoomOptions() {
+  document.getElementById('mode-select').style.display = 'none';
+  document.getElementById('room-popup').style.display = 'block';
+}
+function closeRoomPopup() {
+  document.getElementById('room-popup').style.display = 'none';
+  document.getElementById('mode-select').style.display = 'block';
+}
+
+function connectSocket() {
+  socket = new WebSocket('ws://localhost:8080'); // change to your server IP/domain when hosting
+  socket.onopen = () => {
+    document.getElementById('room-info').textContent = 'Connected to server.';
+  };
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'roomCreated') {
+      passkey = data.passkey;
+      document.getElementById('room-info').textContent = `Room created. Passkey: ${passkey}`;
+      startMultiplayerLoop();
+    }
+    if (data.type === 'roomJoined') {
+      passkey = data.passkey;
+      document.getElementById('room-info').textContent = `Joined room: ${passkey}`;
+      startMultiplayerLoop();
+    }
+    if (data.type === 'state') {
+      otherPlayers = data.players || {};
+    }
+    if (data.type === 'error') {
+      document.getElementById('room-info').textContent = `Error: ${data.message}`;
+    }
+  };
+  socket.onclose = () => {
+    document.getElementById('room-info').textContent = 'Disconnected from server.';
+  };
+}
+
+function createRoomFlow() {
+  if (!socket || socket.readyState !== WebSocket.OPEN) connectSocket();
+  username = prompt('Enter host username:');
+  if (!username) return;
+  socket.send(JSON.stringify({ type: 'createRoom', username }));
+}
+
+function joinRoomFlow() {
+  if (!socket || socket.readyState !== WebSocket.OPEN) connectSocket();
+  const key = document.getElementById('join-key').value.trim();
+  const name = document.getElementById('join-username').value.trim();
+  if (!key || !name) {
+    document.getElementById('room-info').textContent = 'Enter both passkey and username.';
+    return;
+  }
+  username = name;
+  socket.send(JSON.stringify({ type: 'joinRoom', passkey: key, username }));
+}
+
+function startSinglePlayer() {
+  document.getElementById('mode-select').style.display = 'none';
+  startGame(); // your single-player start
+}
+
+function startMultiplayerLoop() {
+  document.getElementById('room-popup').style.display = 'none';
+  startGame(); // reuse your start; just send state each frame
+}
+
+function sendState(player) {
+  if (!socket || socket.readyState !== WebSocket.OPEN || !passkey || !username) return;
+  socket.send(JSON.stringify({
+    type: 'update',
+    passkey,
+    username,
+    state: { x: player.x, y: player.y, score: player.score }
+  }));
+}
+
+function drawPlayers(ctx, player) {
+  // Your player
+  ctx.fillStyle = '#2d6cdf';
+  ctx.fillRect(player.x, player.y, 24, 24);
+  ctx.fillText(username || 'You', player.x, player.y - 10);
+
+  // Others in room
+  Object.entries(otherPlayers).forEach(([name, p]) => {
+    if (name === username) return;
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(p.x, p.y, 24, 24);
+    ctx.fillText(name, p.x, p.y - 10);
+  });
+}
 
 <script>
 // Load scores from localStorage
@@ -624,41 +742,12 @@ renderLeaderboard();
   const flyers = [];    // {x,y,w,h,vx,flap,type}
   const particles = [];
 
-  // Multiplayer
+  // Multiplayer flag
   let isMultiplayer = false;
-  let socket;
-  let username;
-  let otherPlayers = {};
 
   // Utils
   const rand = (a,b)=>Math.random()*(b-a)+a;
   const overlap = (ax,ay,aw,ah,bx,by,bw,bh)=>ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
-
-  // Multiplayer
-  function initMultiplayer() {
-    socket = new WebSocket('ws://localhost:8080');
-    socket.onopen = () => {
-      socket.send(JSON.stringify({ type:'join', username }));
-    };
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'state') {
-        otherPlayers = data.players;
-        // Remove self from otherPlayers
-        delete otherPlayers[username];
-      }
-    };
-  }
-
-  function sendState() {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({
-        type:'update',
-        username,
-        state: { x: player.x, y: player.y, score }
-      }));
-    }
-  }
 
   // Reset/start
   function reset() {
@@ -966,8 +1055,7 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     obstacles.forEach(drawObstacle);
     flyers.forEach(drawFlyer);
 
-    drawPlayer();
-    drawOtherPlayers();
+    drawPlayers(ctx, player);
     drawParticles();
     drawHUD(m);
   }
@@ -1514,18 +1602,6 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     }
   }
 
-  function drawOtherPlayers() {
-    Object.entries(otherPlayers).forEach(([name, p]) => {
-      // Draw other players as simple rectangles for now
-      ctx.fillStyle = 'red';
-      ctx.fillRect(p.x, p.y, player.w, player.h);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '12px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(name, p.x + player.w / 2, p.y - 5);
-    });
-  }
-
   function drawParticles() {
     // Particle effects removed
   }
@@ -1725,14 +1801,9 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
     startGame();
   }
 
-  function startMultiplayer() {
-    document.getElementById('mode-select').style.display = 'none';
+  function startMultiplayerLoop() {
+    document.getElementById('room-popup').style.display = 'none';
     isMultiplayer = true;
-    // Prompt for name here
-    const name = prompt("Enter your name:");
-    window.playerName = name ? name.trim() : "Anonymous";
-    username = window.playerName;
-    initMultiplayer();
     // Start the game
     startGame();
   }
@@ -1741,7 +1812,7 @@ if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
   window.startGame = startGame;
   window.backToStart = backToStart;
   window.startSinglePlayer = startSinglePlayer;
-  window.startMultiplayer = startMultiplayer;
+  window.startMultiplayerLoop = startMultiplayerLoop;
 
   // pause toggle
   function togglePause(){
