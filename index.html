@@ -1,2118 +1,243 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="manifest" href="manifest.json">
-<meta name="google-site-verification" content="bg07VKpS1ISoUtp">
-<title>ANANTH RUN — Animal Jump UHD</title>
-<!-- SEO meta tags -->
-<meta name="description" content="ANANTH RUN — Fast, colorful endless runner. Customize backgrounds, obstacles and physics; jump and dodge obstacles to beat your best score." />
-<meta name="keywords" content="Ananth Run, animal jump, endless runner, HTML5 game, canvas game, jump game, casual game, Sidhu Studios" />
-<meta name="author" content="SIDHU Studios" />
-<meta name="theme-color" content="#0b1220" />
-<meta name="copyright" content="© SIDHU Studios 2025. All rights reserved." />
+  <meta charset="utf-8" />
+  <title>ANANTH JUMP — Renewal in progress</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="ANANTH JUMP is being renewed. Please check back soon for mythic updates." />
+  <style>
+    :root{
+      --bg:#0b1221;
+      --fg:#fef3c7;
+      --accent:#ffd166;
+      --accent2:#3dd6a0;
+      --red:#ef4444;
+      --ink:#111827;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--fg);
+      background: linear-gradient(180deg, #0b1221 0%, #142443 100%);
+      overflow:hidden;
+    }
 
-<!-- Open Graph / Social -->
-<meta property="og:title" content="ANANTH RUN — Animal Jump UHD" />
-<meta property="og:description" content="Play ANANTH RUN — an endless runner with customizable physics, backgrounds, and obstacles. Beat the high score and survive the bamboos!" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://example.com/ananth-run" />
-<meta property="og:image" content="https://example.com/ananth-run/og-image.png" />
-<meta property="og:site_name" content="ANANTH RUN" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="ANANTH RUN — Animal Jump UHD" />
-<meta name="twitter:description" content="Jump, dodge, and survive in ANANTH RUN — customizable endless runner built on HTML5 canvas." />
-<meta name="twitter:image" content="https://example.com/ananth-run/og-image.png" />
-<style>
-  :root { color-scheme: light dark; }
-  html, body { height: 100%; margin: 0; background:#0b1220; font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; }
-  .wrap { max-width: 1600px; margin: 0 auto; padding: 16px; display: flex; gap: 12px; }
-  h1 { margin: 10px 0 12px; font-size: 20px; color: #e6f2ff; letter-spacing: .2px; }
-  #game {
-    width: 100%; aspect-ratio: 16 / 9; display: block;
-    background: #10233a; border-radius: 14px; border: 1px solid #ffffff22;
-    box-shadow: 0 10px 28px rgba(0,0,0,.35);
-    cursor: pointer; touch-action: manipulation; outline: none;
-  }
-  .hud {
-    display: flex; justify-content: space-between; align-items: center;
-    margin: 6px 2px 0; color: #cfe8ff; font-size: 14px; opacity: .9; user-select: none;
-  }
-  .kbd {
-    display: inline-block; padding: 0 6px; border-radius: 6px; border: 1px solid #ffffff22; background:#0b1220; color:#e6f2ff;
-    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
-  }
-  .settings {
-    min-width: 280px; background: #14283f; padding: 12px; border-radius: 10px; color: #e6f2ff; font-size: 14px; height: fit-content;
-  }
-  .settings h2 { font-size: 14px; margin: 0 0 10px; border-bottom: 1px solid #ffffff22; padding-bottom: 6px; }
-  .settings label { display: block; margin: 10px 0 6px; }
-  .settings select, .settings input[type=range] { width: 100%; margin-bottom: 6px; cursor: pointer; }
-  .note { font-size: 12px; opacity: 0.85; margin-top: 6px; }
-  /* Start screen styles */
-  #root {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    background: rgba(0,0,0,0.35);
-    pointer-events: auto;
-  }
-  #stage {
-    position: relative;
-    box-shadow: none;
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-  }
-  canvas#screen { display: block; image-rendering: pixelated; background: #000; width: 100%; height: 100%; }
-  #ui { position: absolute; inset: 0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; z-index:2; pointer-events:auto; }
-  .title span { font-size: 36px; letter-spacing: 4px; margin: 0 4px; text-shadow: 0 0 12px #00e600, 0 0 24px #00e600; }
-  .row { display:flex; gap:12px; }
-  .btn { background:#00aaff; color:#fff; padding:12px 22px; border:none; border-radius:8px; box-shadow:0 0 12px #00e600; cursor:pointer; font-size:14px; }
-  .btn:hover { transform:scale(1.08); box-shadow:0 0 16px #00e600; }
-  #mode-select {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff8dc;
-    border: 4px solid #d97706;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 0 12px rgba(0,0,0,0.3);
-    z-index: 10001;
-  }
-  #mode-select button {
-    display: block;
-    margin: 8px auto;
-    padding: 10px 16px;
-    font-weight: bold;
-    border-radius: 8px;
-    border: 2px solid #111;
-    background: #fef3c7;
-    cursor: pointer;
-  }
-  #room-popup, #mode-select {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #fff8dc; border: 4px solid #d97706; border-radius: 12px;
-    padding: 16px; text-align: center;
-  }
-  #room-popup input { padding: 8px; margin: 4px; border: 2px solid #111; border-radius: 6px; }
-  #room-popup button, #mode-select button {
-    padding: 8px 12px; margin: 6px; border-radius: 8px; border: 2px solid #111; background: #fef3c7; cursor: pointer;
-  }
-  .start-footer { position:absolute; bottom:35px; width:100%; text-align:center; font-size:10px; opacity:0.7; }
-  .footer-left-content { position:absolute; bottom:50px; left:20px; max-width:300px; text-align:left; z-index: 10; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; }
-  .footer-left-content .game-intro-title { font-size: 14px; color: #e6f2ff; margin: 0 0 4px 0; }
-  .footer-left-content .game-intro-desc { font-size: 10px; color: #cfe8ff; margin: 2px 0; line-height: 1.3; }
-  .footer-left-content .game-intro-credits { font-size: 9px; color: #a0c0ff; margin: 2px 0; font-style: italic; }
-  .copyright-notice { position:absolute; bottom:5px; width:100%; text-align:center; font-size:12px; opacity:0.9; color: #333333; font-weight: bold; }
-  #backBtn { position: absolute; top: 16px; left: 16px; background: #ff6b6b; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; z-index: 10000; display: none; }
-  #backBtn:hover { background: #ff5252; }
-  /* Debug helpers (temporary) */
-  #root.debug-visible { box-shadow: 0 0 0 4px rgba(255,80,80,0.6); }
-  #start-debug { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 12px; z-index: 99999; pointer-events: none; }
-  /* Settings modal and icon */
-  .settings-icon {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    width: 44px;
-    height: 44px;
-    background: rgba(20,40,64,0.92);
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
-    cursor: pointer;
-    z-index: 100001;
-    border: 1px solid #ffffff22;
-    transition: transform .12s ease, background .12s ease;
-  }
-  .settings-icon:hover { transform: translateY(-3px) scale(1.03); background: rgba(24,48,80,0.98); }
-  .settings-icon svg { width: 22px; height: 22px; fill: #e6f2ff; }
+    /* Subtle parallax stars */
+    .sky, .sky2, .sky3{
+      position:fixed; inset:0; pointer-events:none;
+      background-repeat:repeat;
+      will-change:transform;
+    }
+    .sky{ background-image: radial-gradient(#ffffff15 1px, transparent 1px); background-size: 24px 24px; animation: drift 32s linear infinite; }
+    .sky2{ background-image: radial-gradient(#ffffff1f 1px, transparent 1px); background-size: 36px 36px; animation: drift2 52s linear infinite; }
+    .sky3{ background-image: radial-gradient(#ffffff25 1px, transparent 1px); background-size: 48px 48px; animation: drift3 68s linear infinite; }
+    @keyframes drift   { from{transform:translateY(0)} to{transform:translateY(-36px)} }
+    @keyframes drift2  { from{transform:translateY(0)} to{transform:translateY(-24px)} }
+    @keyframes drift3  { from{transform:translateY(0)} to{transform:translateY(-18px)} }
 
-  .settings-modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.6);
-    z-index: 100000;
-    padding: 20px;
-  }
-  .settings-modal .panel {
-    max-width: 420px; width: 100%; background: #102533; border-radius: 12px; padding: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); color: #e6f2ff;
-  }
-  .settings-modal .panel .close {
-    float: right; background: transparent; border: none; color: #e6f2ff; font-size: 20px; cursor: pointer;
-  }
+    /* Center card */
+    .wrap{
+      position:relative; height:100%; display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .card{
+      width:min(720px, 92vw);
+      background: rgba(20, 36, 67, 0.8);
+      border: 4px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
+      padding: 28px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; margin-bottom:8px;
+    }
+    .logo{
+      width:48px; height:48px; border:3px solid var(--accent2); border-radius:10px;
+      background:
+        conic-gradient(from 90deg at 50% 50%, #3dd6a0 0 25%, #ffd166 0 50%, #a78bfa 0 75%, #ef4444 0 100%);
+      box-shadow: inset 0 0 0 3px #0b1221;
+    }
+    .title{
+      font-weight:800; letter-spacing:0.5px; font-size: clamp(22px, 3.2vw, 34px);
+      text-transform: uppercase;
+    }
+    .badge{
+      display:inline-block; margin-left:6px; padding:4px 10px; font-size:12px; font-weight:700;
+      color:#0b1221; background:var(--accent); border-radius:999px; border:2px solid #0b1221;
+      transform:translateY(-2px);
+    }
 
-  /* When settings are open hide page content except icon and modal */
-  body[data-settings-open="true"] > *:not(.settings-modal):not(.settings-icon) { display: none !important; }
-  /* Improved controls */
-  .panel .control { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-  .panel .control:last-child { border-bottom: none; }
-  .panel label { font-size:13px; color:#dbefff; }
-  .toggle { width:44px; height:24px; background:#23364a; border-radius:16px; position:relative; cursor:pointer; flex:0 0 44px; }
-  .toggle .knob { position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .14s ease; }
-  .toggle.on { background:#1aa45a; }
-  .toggle.on .knob { left:23px; }
-  /* PIN prompt modal */
-  .pin-modal {
-    position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100002;
-    background: rgba(0,0,0,0.6);
-  }
-  .pin-modal .box {
-    width: 320px; max-width: 92%; background: linear-gradient(180deg,#0e2a3a,#08212b); border-radius: 12px; padding: 16px; color:#e6f2ff; box-shadow:0 12px 40px rgba(0,0,0,0.6);
-  }
-  .pin-modal .box h3 { margin:0 0 8px; font-size:16px; }
-  .pin-modal .pin-input { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #ffffff22; background:#081a26; color:#fff; font-size:16px; }
-  .pin-modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
-  .pin-modal .btn { background:#0aa0ff; border:none; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
-  /* Rating modal */
-  .rating-modal {
-    position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100003;
-    background: rgba(0,0,0,0.6);
-  }
-  .rating-modal .box {
-    width: 320px; max-width: 92%; background: linear-gradient(180deg,#0e2a3a,#08212b); border-radius: 12px; padding: 16px; color:#e6f2ff; box-shadow:0 12px 40px rgba(0,0,0,0.6);
-  }
-  .rating-modal .box h3 { margin:0 0 8px; font-size:16px; }
-  .rating-modal .stars { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
-  .rating-modal .star { font-size: 2rem; cursor: pointer; color: #666; transition: color 0.2s; }
-  .rating-modal .star.selected, .rating-modal .star:hover { color: #ffd700; }
-  .rating-modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
-  .rating-modal .btn { background:#0aa0ff; border:none; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
-  .pin-modal .btn.secondary { background:#243744; }
-  .pin-modal .error { color:#ff8b8b; margin-top:8px; font-size:13px; min-height:18px; }
-  /* Heart pop animation */
-  @keyframes heart-pop {
-    0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-    40% { transform: translate(-50%, -70%) scale(2.2) rotate(-10deg); opacity: 1; }
-    100% { transform: translate(-50%, -220%) scale(0.18) rotate(12deg); opacity: 0; }
-  }
-  .heart-pop {
-    position: fixed;
-    left: 0; top: 0;
-    pointer-events: none;
-    font-size: 40px;
-    color: #ff5a78;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.55);
-    transform: translate(-50%, -50%);
-    animation: heart-pop 900ms cubic-bezier(.2,.8,.2,1) forwards;
-    z-index: 120000;
-  }
-  /* tinted popup box for messages */
-  .tint-box {
-    position: fixed; left: 50%; top: 18%; transform: translateX(-50%) translateY(-8px); background: rgba(10,18,26,0.88); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); font-weight:700; opacity:0; transition: opacity .22s ease, transform .28s cubic-bezier(.2,.8,.2,1); z-index:120500; pointer-events:none; }
-  .tint-box.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-  /* pause overlay */
-  .pause-overlay { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; z-index:20000; pointer-events:none; }
-  .pause-overlay .label { background: rgba(0,0,0,0.6); color:#fff; padding:18px 28px; border-radius:12px; font-size:28px; letter-spacing:2px; box-shadow:0 12px 36px rgba(0,0,0,0.6); }
-</style>
+    .headline{
+      font-size: clamp(18px, 2.2vw, 22px);
+      margin: 12px 0 10px;
+      color: var(--accent);
+      font-weight:700;
+    }
+    .sub{
+      color:#cbd5e1;
+      line-height:1.55;
+      margin-bottom:14px;
+    }
+
+    /* Countdown */
+    .count{
+      display:flex; gap:12px; flex-wrap:wrap; margin:18px 0 8px;
+    }
+    .tile{
+      flex:0 0 auto; min-width:88px;
+      background:#0f1a34; border:2px solid #24385f; border-radius:10px;
+      padding:10px 12px; text-align:center;
+    }
+    .num{ font-size:24px; font-weight:800; color:#fef3c7; }
+    .lbl{ font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px; }
+
+    /* CTA row */
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .btn{
+      flex:1 1 auto; min-width:160px;
+      padding:12px 14px; border-radius:12px; border:2px solid #0b1221;
+      background:linear-gradient(180deg, #ffd166 0%, #ffbe55 100%);
+      color:#0b1221; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; cursor:pointer;
+      box-shadow: 0 6px 0 #b86f00;
+    }
+    .btn:active{ transform:translateY(2px); box-shadow:0 4px 0 #b86f00; }
+    .ghost{
+      background:#0f1a34; color:#fef3c7; border:2px solid #24385f; box-shadow:none;
+    }
+
+    /* Info footer */
+    .foot{
+      margin-top:16px; padding-top:12px; border-top:2px dashed #24385f; color:#94a3b8; font-size:13px;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent2); box-shadow:0 0 8px var(--accent2); }
+    .note{ flex:1 1 auto; }
+    .links{ display:flex; gap:10px; flex-wrap:wrap; }
+    .link{
+      padding:6px 10px; border-radius:999px; background:#0f1a34; border:1px solid #24385f; color:#cbd5e1; text-decoration:none;
+      font-size:12px;
+    }
+
+    /* Tiny pixel border animation for vibe */
+    .pixel-frame{
+      position:absolute; inset:12px;
+      border: 2px dashed #24385f;
+      animation: glow 2.6s ease-in-out infinite;
+      border-radius: 12px;
+      pointer-events:none;
+    }
+    @keyframes glow{
+      0%,100%{ box-shadow: 0 0 0px #3dd6a0 }
+      50%{ box-shadow: 0 0 12px #3dd6a0 }
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:480px){
+      .tile{ min-width:72px }
+      .btn{ min-width:140px }
+    }
+  </style>
 </head>
 <body>
-<!-- PIN prompt modal -->
-<div class="pin-modal" id="pinModal" aria-hidden="true">
-  <div class="box" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
-    <h3 id="pinTitle">Enter PIN to access Settings</h3>
-    <div style="font-size:13px; opacity:0.9; margin-bottom:8px;">You need a PIN to use settings.</div>
-    <input id="pinInput" class="pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" aria-label="Enter PIN">
-    <div class="error" id="pinError"></div>
-    <div class="actions">
-      <button class="btn secondary" id="pinCancel">Cancel</button>
-      <button class="btn" id="pinSubmit">Submit</button>
-    </div>
-  </div>
-</div>
+  <div class="sky"></div>
+  <div class="sky2"></div>
+  <div class="sky3"></div>
 
-<!-- Rating modal -->
-<div class="rating-modal" id="ratingModal" aria-hidden="true">
-  <div class="box" role="dialog" aria-modal="true" aria-labelledby="ratingTitle">
-    <h3 id="ratingTitle">Rate the Game</h3>
-    <div class="stars" id="stars">
-      <span class="star" data-rating="1" onclick="selectStar(1)">★</span>
-      <span class="star" data-rating="2" onclick="selectStar(2)">★</span>
-      <span class="star" data-rating="3" onclick="selectStar(3)">★</span>
-      <span class="star" data-rating="4" onclick="selectStar(4)">★</span>
-      <span class="star" data-rating="5" onclick="selectStar(5)">★</span>
-    </div>
-    <div class="actions">
-      <button class="btn secondary" onclick="document.getElementById('ratingModal').style.display = 'none'">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  console.log("Page loading...");
-  window.__pageStarted = true;
-</script>
-
-<!-- Start screen overlay -->
-<div id="root">
-  <div id="stage">
-    <canvas id="screen" width="640" height="360" aria-hidden="true"></canvas>
-    <div id="ui">
-      <div class="title">
-        <span style="color:#ff4c4c">A</span>
-        <span style="color:#ffa64c">N</span>
-        <span style="color:#ffe64c">A</span>
-        <span style="color:#4cff4c">N</span>
-        <span style="color:#4cffe6">T</span>
-        <span style="color:#4ca6ff">H</span>
-        <span style="color:#b84cff">R</span>
-        <span style="color:#ff4cff">U</span>
-        <span style="color:#ff4c99">N</span>
-      </div>
-      <div class="row">
-        <button class="btn" onclick="startGame()">START</button>
-        <button class="btn" onclick="showModes()">MODES</button>
-        <button class="btn" onclick="showRating()">RATE</button>
-        <button class="btn" onclick="showHighScore()">SCORE</button>
-        <button class="btn" id="deviceSwitchBtn">Switch Device</button>
-      </div>
-      <div class="start-footer">© SIDHU Studios 2025</div>
-      <div class="footer-left-content">
-        <h1 class="game-intro-title">Play ANANTH JUMP Online</h1>
-        <p class="game-intro-desc">ANANTH JUMP is a Kerala-inspired pixel arcade runner. Jump, dodge, and survive the mythic trail!</p>
-        <p class="game-intro-credits">Created by SIDHU Studios. Play now in your browser — no download needed.</p>
-      </div>
-      <p class="copyright-notice">All content © SIDHU Studios 2025. Unauthorized reproduction or distribution is prohibited.</p>
-    </div>
-  </div>
-</div>
-
-<!-- Mode selection popup -->
-<div id="mode-select" style="display:none;">
-  <h2>Select Mode</h2>
-  <button onclick="startSinglePlayer()">Single Player</button>
-  <button onclick="showRoomOptions()">Multiplayer (Private Room)</button>
-  <button onclick="closeModes()">Back</button>
-</div>
-
-<!-- Room popup -->
-<div id="room-popup" style="display:none;">
-  <h3>Private Room</h3>
-  <button onclick="createRoomFlow()">Create room</button>
-  <div style="margin-top:8px;">
-    <input id="join-key" placeholder="Enter passkey" />
-    <input id="join-username" placeholder="Enter username" />
-    <button onclick="joinRoomFlow()">Join room</button>
-  </div>
-  <button onclick="closeRoomPopup()">Close</button>
-  <div id="room-info" style="margin-top:8px;"></div>
-</div>
-
-<div id="leaderboard" style="
-  position: absolute; top: 60px; right: 20px;
-  width: 240px; background: #fff8dc;
-  border: 4px solid #d97706; border-radius: 12px;
-  padding: 12px; font-family: monospace;
-  color: #111; box-shadow: 0 0 12px rgba(0,0,0,0.3);
-">
-  <div style="display: flex; justify-content: center; align-items: center; font-size: 0.8rem; margin-bottom: 10px;">
-    <span style="font-size: 1.2rem; margin: 0 6px;">⭐</span>
-    <span style="background: #dc2626; color: white; padding: 4px 8px; border-radius: 6px; font-weight: bold;">LEADERBOARD</span>
-    <span style="font-size: 1.2rem; margin: 0 6px;">⭐</span>
-  </div>
-  <ul id="leaderboard-list" style="list-style: none; padding: 0; margin: 0;"></ul>
-</div>
-
-<script>
-(() => {
-  const BASE_W = 640, BASE_H = 360;
-  const screen = document.getElementById('screen');
-  const stage = document.getElementById('stage');
-  
-  // Safety check: ensure canvas exists and has context
-  if (!screen || !stage) {
-    console.error('Start screen canvas or stage element not found!');
-    return;
-  }
-  
-  const off = document.createElement('canvas'); off.width = BASE_W; off.height = BASE_H;
-  const p = off.getContext('2d');
-  const g = screen.getContext('2d');
-  
-  if (!g) {
-    console.error('Failed to get canvas context!');
-    return;
-  }
-
-  // Debug: mark that the start-screen IIFE ran and make the overlay visible for testing
-  try {
-    console.log("Start screen IIFE initialized");
-    window.__startScreenAlive = true;
-    const rootEl = document.getElementById('root');
-    if (rootEl) rootEl.classList.add('debug-visible');
-    const uiEl = document.getElementById('ui');
-    if (uiEl && !document.getElementById('start-debug')) {
-      const badge = document.createElement('div'); badge.id = 'start-debug'; badge.textContent = 'start-screen active';
-      uiEl.appendChild(badge);
-    }
-  } catch (err) { console.warn('Start-screen debug init failed', err); }
-
-  function resizeStart() {
-    const w = innerWidth, h = innerHeight;
-    const scale = Math.max(1, Math.floor(Math.min(w / BASE_W, h / BASE_H)));
-    screen.width = w; screen.height = h;
-    stage.style.width = w + 'px'; stage.style.height = h + 'px';
-  }
-  addEventListener('resize', resizeStart); resizeStart();
-
-  let t = 0;
-  let clouds = Array.from({ length: 7 }, () => ({ x: Math.random() * BASE_W, y: 20 + Math.random() * 70, w: 24 + Math.random() * 18, h: 10 + Math.random() * 8, s: 0.25 + Math.random() * 0.25 }));
-  let buildings = Array.from({ length: 24 }, (_, i) => ({ x: i * 18, y: BASE_H * 0.7, h: 40 + Math.random() * 50, w: 14 + Math.random() * 10 }));
-
-  function rect(x, y, w, h, c) { p.fillStyle = c; p.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h)); }
-  function sky() { rect(0, 0, BASE_W, BASE_H, '#70c5ce'); }
-  function sun(cx, cy, r) { for (let rr = r; rr > 0; rr--) { rect(cx - rr, cy - rr, rr * 2, 1, '#ffe66d'); } }
-  function drawCloud(cl) { rect(cl.x, cl.y, cl.w, cl.h, '#fff'); }
-  function hills() { for (let i = 0; i < 3; i++) { const col = i == 0 ? '#316b57' : i == 1 ? '#2f705b' : '#27654f'; const y = BASE_H * 0.70 + i * 6; for (let x = 0; x < BASE_W; x += 4) { rect(x, y, 6, BASE_H - y, col); } } }
-  function drawBuilding(x, y, w, h) {
-    // Draw main building
-    rect(x, y, w, h, '#4a7a9c');
-    // Add roof
-    const roofH = Math.max(2, Math.floor(h / 10));
-    rect(x - 1, y - roofH, w + 2, roofH, '#2a4a5c');
-    // Add windows
-    const windowW = Math.max(2, Math.floor(w / 4));
-    const windowH = Math.max(2, Math.floor(h / 6));
-    const numWindows = Math.floor(w / (windowW + 2));
-    for (let i = 0; i < numWindows; i++) {
-      const wx = x + 1 + i * (windowW + 1);
-      const wy = y + 2;
-      if (wx + windowW <= x + w && wy + windowH <= y + h) {
-        // Draw window frame
-        rect(wx - 1, wy - 1, windowW + 2, windowH + 2, '#000');
-        // Draw window
-        rect(wx, wy, windowW, windowH, '#f0f0f0');
-      }
-    }
-  }
-  function skyline() { const baseY = BASE_H * 0.74; buildings.forEach(b => { drawBuilding(b.x, baseY - b.h, b.w, b.h); }); }
-  function ground() { const y = BASE_H * 0.82; rect(0, y - 3, BASE_W, 3, '#5c943d'); rect(0, y, BASE_W, BASE_H - y, '#ded895'); }
-
-  function step() {
-    try {
-      if (!p || !g) {
-        console.error("Canvas contexts not available");
-        return;
-      }
-      clouds.forEach(c => { c.x += c.s; if (c.x > BASE_W + 30) c.x = -30; });
-      buildings.forEach(b => { b.x -= 0.5; if (b.x < -20) b.x = BASE_W + 20; });
-      p.clearRect(0, 0, BASE_W, BASE_H);
-      sky(); sun(40, 26, 12); clouds.forEach(drawCloud); hills(); skyline(); ground();
-      g.imageSmoothingEnabled = false; g.clearRect(0, 0, screen.width, screen.height); g.drawImage(off, 0, 0, screen.width, screen.height);
-      t++; requestAnimationFrame(step);
-    } catch (err) {
-      console.error("Start screen animation error:", err);
-    }
-  }
-  step();
-})();
-</script>
-
-<script>
-function showHighScore() {
-  const name = prompt("Enter your name:");
-  if (name) {
-    window.playerName = name.trim();
-    const key = "highscore_" + window.playerName;
-    const score = localStorage.getItem(key) || 0;
-    alert(`High Score for ${window.playerName}: ${score}`);
-  }
-}
-window.showHighScore = showHighScore;
-
-function showRating() {
-  document.getElementById('ratingModal').style.display = 'flex';
-  document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-}
-
-function selectStar(rating) {
-  document.querySelectorAll('.star').forEach((s, i) => {
-    if (i < rating) s.classList.add('selected');
-    else s.classList.remove('selected');
-  });
-  const username = prompt("Enter your username:");
-  if (username) {
-    let ratings = JSON.parse(localStorage.getItem('ratings') || "{}");
-    ratings[username.trim()] = rating;
-    localStorage.setItem('ratings', JSON.stringify(ratings));
-    alert(`Thank you for rating ${rating} stars, ${username.trim()}!`);
-  }
-  document.getElementById('ratingModal').style.display = 'none';
-}
-
-function showModes() {
-  document.getElementById('mode-select').style.display = 'block';
-  document.getElementById('ui').style.display = 'none';
-}
-
-function closeModes() {
-  document.getElementById('mode-select').style.display = 'none';
-  document.getElementById('ui').style.display = 'flex';
-}
-
-let socket = null;
-let passkey = null;
-let username = null;
-let otherPlayers = {};
-
-function showRoomOptions() {
-  document.getElementById('mode-select').style.display = 'none';
-  document.getElementById('room-popup').style.display = 'block';
-}
-function closeRoomPopup() {
-  document.getElementById('room-popup').style.display = 'none';
-  document.getElementById('mode-select').style.display = 'block';
-}
-
-function connectSocket() {
-  socket = new WebSocket('ws://localhost:8080'); // change to your server IP/domain when hosting
-  socket.onopen = () => {
-    document.getElementById('room-info').textContent = 'Connected to server.';
-  };
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.type === 'roomCreated') {
-      passkey = data.passkey;
-      document.getElementById('room-info').textContent = `Room created. Passkey: ${passkey}`;
-      startMultiplayerLoop();
-    }
-    if (data.type === 'roomJoined') {
-      passkey = data.passkey;
-      document.getElementById('room-info').textContent = `Joined room: ${passkey}`;
-      startMultiplayerLoop();
-    }
-    if (data.type === 'state') {
-      otherPlayers = data.players || {};
-    }
-    if (data.type === 'error') {
-      document.getElementById('room-info').textContent = `Error: ${data.message}`;
-    }
-  };
-  socket.onclose = () => {
-    document.getElementById('room-info').textContent = 'Disconnected from server.';
-  };
-}
-
-function createRoomFlow() {
-  if (!socket || socket.readyState !== WebSocket.OPEN) connectSocket();
-  username = prompt('Enter host username:');
-  if (!username) return;
-  socket.send(JSON.stringify({ type: 'createRoom', username }));
-}
-
-function joinRoomFlow() {
-  if (!socket || socket.readyState !== WebSocket.OPEN) connectSocket();
-  const key = document.getElementById('join-key').value.trim();
-  const name = document.getElementById('join-username').value.trim();
-  if (!key || !name) {
-    document.getElementById('room-info').textContent = 'Enter both passkey and username.';
-    return;
-  }
-  username = name;
-  socket.send(JSON.stringify({ type: 'joinRoom', passkey: key, username }));
-}
-
-function startSinglePlayer() {
-  document.getElementById('mode-select').style.display = 'none';
-  startGame(); // your single-player start
-}
-
-function startMultiplayerLoop() {
-  document.getElementById('room-popup').style.display = 'none';
-  startGame(); // reuse your start; just send state each frame
-}
-
-function sendState(player) {
-  if (!socket || socket.readyState !== WebSocket.OPEN || !passkey || !username) return;
-  socket.send(JSON.stringify({
-    type: 'update',
-    passkey,
-    username,
-    state: { x: player.x, y: player.y, score: player.score }
-  }));
-}
-
-function drawPlayers(ctx, player) {
-  // Your player
-  ctx.fillStyle = '#2d6cdf';
-  ctx.fillRect(player.x, player.y, 24, 24);
-  ctx.fillText(username || 'You', player.x, player.y - 10);
-
-  // Others in room
-  Object.entries(otherPlayers).forEach(([name, p]) => {
-    if (name === username) return;
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(p.x, p.y, 24, 24);
-    ctx.fillText(name, p.x, p.y - 10);
-  });
-}
-
-<script>
-// Load scores from localStorage
-let bestScores = JSON.parse(localStorage.getItem('bestScores') || "{}");
-
-// Render leaderboard
-function renderLeaderboard() {
-  const list = document.getElementById('leaderboard-list');
-  list.innerHTML = '';
-
-  const sorted = Object.entries(bestScores)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6); // top 6
-
-  sorted.forEach(([name, score], index) => {
-    const li = document.createElement('li');
-    li.style.display = 'flex';
-    li.style.justifyContent = 'space-between';
-    li.style.alignItems = 'center';
-    li.style.fontSize = '0.7rem';
-    li.style.margin = '4px 0';
-    li.style.background = '#fef3c7';
-    li.style.padding = '4px 6px';
-    li.style.borderRadius = '6px';
-    li.style.border = '1px solid #fbbf24';
-    li.innerHTML = `<span>PLAYER ${index + 1}</span> <span>🟡 ${score}</span>`;
-    list.appendChild(li);
-  });
-}
-
-// Call once when game starts
-renderLeaderboard();
-</script>
-
-<div id="gameContainer" style="display:none;">
   <div class="wrap">
-  <div style="flex:1;">
-    <button id="backBtn" onclick="backToStart()">← BACK</button>
-    <h1>🐘 Animal Jump UHD</h1>
-    <canvas id="game" aria-label="Animal Jump game" tabindex="0"></canvas>
-    <div class="hud">
-      <div>Jump with <span class="kbd">Space</span> / <span class="kbd">↑</span> / <span class="kbd">W</span> or tap</div>
-      <div id="scores">Score: 0 · Best: 0</div>
-      <div id="lives" aria-live="polite" style="font-size:20px; font-weight:600;">Lives: <span id="livesIcons">♥ ♥ ♥ ♥ ♥</span></div>
+    <div class="card">
+      <div class="pixel-frame"></div>
+
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">ANANTH JUMP <span class="badge">renewing</span></div>
+      </div>
+
+      <div class="headline">We’re rebuilding the mythic experience.</div>
+      <p class="sub">
+        The game is undergoing a joyful upgrade: cleaner UI, private rooms, LogANANTH login, and festive Kerala‑style overlays.
+        Please check back soon — your next run will feel legendary.
+      </p>
+
+      <div class="count" aria-label="Estimated time to return">
+        <div class="tile">
+          <div class="num" id="dd">00</div>
+          <div class="lbl">Days</div>
+        </div>
+        <div class="tile">
+          <div class="num" id="hh">00</div>
+          <div class="lbl">Hours</div>
+        </div>
+        <div class="tile">
+          <div class="num" id="mm">00</div>
+          <div class="lbl">Minutes</div>
+        </div>
+        <div class="tile">
+          <div class="num" id="ss">00</div>
+          <div class="lbl">Seconds</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="notifyBtn">Notify me</button>
+        <button class="btn ghost" id="retryBtn">Try again</button>
+      </div>
+
+      <div class="foot">
+        <span class="dot"></span>
+        <div class="note">Status: Maintenance mode. Multiplayer server online locally — client relaunch soon.</div>
+        <div class="links">
+          <a class="link" href="#" id="statusLink">Status</a>
+          <a class="link" href="#" id="releaseNotes">Release notes</a>
+          <a class="link" href="#" id="contactLink">Contact</a>
+        </div>
+      </div>
     </div>
   </div>
-  </div>
 
-  <!-- Hidden settings host (real controls used by game logic) -->
-  <div id="settingsHost" style="display:none;">
-    <label for="animalSelect" style="display:none">Animal</label>
-    <select id="animalSelect">
-      <option value="elephant" selected>Elephant</option>
-      <option value="lion">Lion</option>
-      <option value="deer">Deer</option>
-    </select>
+  <script>
+    // Countdown target: set to ~3 days ahead by default
+    const target = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
-    <label for="backgroundSelect" style="display:none">Background</label>
-    <select id="backgroundSelect">
-      <option value="trivandrum">Trivandrum</option>
-      <option value="iceberg">Iceberg</option>
-      <option value="lava">Lava</option>
-      <option value="fuji">Mount Fuji</option>
-    </select>
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+      const now = new Date();
+      let diff = Math.max(0, target - now);
+      const d = Math.floor(diff / (24*60*60*1000));
+      diff -= d * (24*60*60*1000);
+      const h = Math.floor(diff / (60*60*1000));
+      diff -= h * (60*60*1000);
+      const m = Math.floor(diff / (60*1000));
+      diff -= m * (60*1000);
+      const s = Math.floor(diff / 1000);
 
-    <input type="range" id="gravitySlider" min="0.4" max="1.6" step="0.05" value="0.8">
-    <span id="gravityValue">0.8</span>
-
-    <select id="obstacleSelect">
-      <option value="bamboo" selected>Bamboo</option>
-      <option value="dry">Dry stick</option>
-      <option value="iceberg">Iceberg</option>
-      <option value="rock">Rock</option>
-    </select>
-
-    <select id="flyerSelect">
-      <option value="mango" selected>Mangoes</option>
-      <option value="bat">Bats</option>
-      <option value="lollipop">Lollipops</option>
-      <option value="meteor">Meteors</option>
-    </select>
-
-    <input type="range" id="speedSlider" min="4" max="20" step="0.5" value="7">
-    <span id="speedValue">7</span>
-
-    <select id="difficultySelect">
-      <option value="easy">Easy</option>
-      <option value="hard" selected>Hard</option>
-      <option value="extreme">Extreme</option>
-    </select>
-
-    <!-- basic toggles persisted here -->
-    <input type="hidden" id="soundToggle" value="1">
-    <input type="hidden" id="musicToggle" value="1">
-    <input type="hidden" id="fullscreenToggle" value="0">
-  </div>
-</div>
-
-<script>
-(() => {
-  // DOM
-  const canvas = document.getElementById("game");
-  if (!canvas) {
-    console.error("Game canvas not found!");
-    return;
-  }
-  
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error("Failed to get canvas context!");
-    return;
-  }
-  
-  const scoresEl = document.getElementById("scores");
-  const animalSelect = document.getElementById("animalSelect");
-  const backgroundSelect = document.getElementById("backgroundSelect");
-  const gravitySlider = document.getElementById("gravitySlider");
-  const gravityValue = document.getElementById("gravityValue");
-  const obstacleSelect = document.getElementById("obstacleSelect");
-  const flyerSelect = document.getElementById("flyerSelect");
-  const speedSlider = document.getElementById("speedSlider");
-  const speedValue = document.getElementById("speedValue");
-  const difficultySelect = document.getElementById("difficultySelect");
-  const livesIcons = document.getElementById("livesIcons");
-
-  gravitySlider.addEventListener("input", () => { gravityValue.textContent = gravitySlider.value; });
-  speedSlider.addEventListener("input", () => { speedValue.textContent = speedSlider.value; });
-  gravityValue.textContent = gravitySlider.value;
-  speedValue.textContent = speedSlider.value;
-
-  // HiDPI canvas - use larger logical dimensions for a bigger game screen
-  const CANVAS_W = 1280;
-  const CANVAS_H = 720;
-
-  function fitCanvas() {
-    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-    canvas.width = CANVAS_W * dpr;
-    canvas.height = CANVAS_H * dpr;
-    // reset transform and scale correctly for HiDPI
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // CSS size: fill available width but don't exceed logical canvas width
-    const margin = 48; // keep some side margin
-    const cssW = Math.min(CANVAS_W, Math.max(320, window.innerWidth - margin));
-    canvas.style.width = cssW + "px";
-    canvas.style.height = Math.round(cssW * CANVAS_H / CANVAS_W) + "px";
-  }
-  
-  // Initialize canvas on page load
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", fitCanvas);
-  } else {
-    fitCanvas();
-  }
-  
-  window.addEventListener("resize", fitCanvas);
-
-  // Metrics - use fixed canvas dimensions
-  const M = () => {
-    return {
-      w: CANVAS_W,
-      h: CANVAS_H,
-      horizon: Math.floor(CANVAS_H * 0.62),
-      groundY: Math.floor(CANVAS_H * 0.80)
-    };
-  };
-
-  // State
-  let running = false, gameOver = false;
-  let paused = false;
-  let t = 0, speed = 7, baseSpeed = 7;
-  let gravity = parseFloat(gravitySlider.value), jumpV = -14.0;
-  let spawnMin = 900, spawnMax = 1500;
-  let flyerGap = 3800;
-  let lastSpawn = 0, lastFlyerSpawn = 0;
-  let score = 0, best = 0;
-  const player = { x: 92, y: 0, w: 78, h: 56, vy: 0, onGround: true };
-  const obstacles = []; // {x,y,w,h,type}
-  const flyers = [];    // {x,y,w,h,vx,flap,type}
-  const particles = [];
-
-  // Multiplayer flag
-  let isMultiplayer = false;
-
-  // Utils
-  const rand = (a,b)=>Math.random()*(b-a)+a;
-  const overlap = (ax,ay,aw,ah,bx,by,bw,bh)=>ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
-
-  // Reset/start
-  function reset() {
-    best = Number(localStorage.getItem("highscore_" + (window.playerName || "Anonymous")) || 0);
-    running = true; gameOver = false;
-    t = 0;
-    gravity = parseFloat(gravitySlider.value);
-    baseSpeed = parseFloat(speedSlider.value);
-    // air-jump tracking: allow up to `maxAirJumps` while airborne
-    // honor unlimited unlock flag if previously enabled
-    window.unlimitedAirJumps = !!window.unlimitedAirJumps;
-    window.maxAirJumps = window.unlimitedAirJumps ? Infinity : 2;
-    window.airJumpsUsed = 0;
-    const diff = difficultySelect.value;
-    if (diff === "easy") {
-      spawnMin = 1300; spawnMax = 2100; baseSpeed *= 0.85; flyerGap = 5200;
-    } else if (diff === "hard") {
-      spawnMin = 900; spawnMax = 1500; flyerGap = 3800;
-    } else if (diff === "extreme") {
-      spawnMin = 700; spawnMax = 1200; baseSpeed *= 1.2; flyerGap = 3000;
-    } else {
-      spawnMin = 520; spawnMax = 900; baseSpeed *= 1.4; flyerGap = 2200;
+      document.getElementById('dd').textContent = pad(d);
+      document.getElementById('hh').textContent = pad(h);
+      document.getElementById('mm').textContent = pad(m);
+      document.getElementById('ss').textContent = pad(s);
     }
-    speed = baseSpeed;
-    score = 0;
-    obstacles.length = 0;
-    flyers.length = 0;
-    lastSpawn = 0;
-    lastFlyerSpawn = 0;
+    tick(); setInterval(tick, 1000);
 
-    const { groundY } = M();
-    player.y = groundY - player.h;
-    player.vy = 0;
-    player.onGround = true;
-
-    // ensure air-jump counter reset when game resets
-    window.airJumpsUsed = 0;
-
-    // reset hearts for a new run
-    heartsRemaining = 5;
-    updateLives();
-
-    updateScores();
-  }
-
-  function updateScores() {
-    scoresEl.textContent = `Score: ${Math.floor(score)} · Best: ${best}`;
-  }
-
-  // Lives / collision message state
-  let heartsRemaining = 5;
-  let invulnerableTimer = 0; // ms
-  let collisionMessage = '';
-  let collisionMessageTimer = 0; // ms
-
-  function updateLives() {
-    if (!livesIcons) return;
-    // render filled hearts for remaining, empty for lost
-    const total = 5;
-    let out = '';
-    for (let i = 0; i < total; i++) out += (i < heartsRemaining) ? '♥ ' : '♡ ';
-    livesIcons.textContent = out.trim();
-  }
-
-
-  // Input
-  function tryJump() {
-    if (gameOver) {
-      reset();
-      lastTime = 0;
-      running = true;
-      requestAnimationFrame(loop);
-      return;
-    }
-    if (!running) { return; }
-
-    // If on ground: normal jump
-    if (player.onGround) {
-      player.vy = jumpV;
-      player.onGround = false;
-      // reset mid-air counter when leaving ground
-      window.airJumpsUsed = 0;
-      return;
-    }
-
-    // If airborne: allow up to `maxAirJumps` additional jumps (rapid)
-    if ((window.airJumpsUsed || 0) < (window.maxAirJumps || 0)) {
-      // perform another jump in-air
-      player.vy = jumpV;
-      window.airJumpsUsed = (window.airJumpsUsed || 0) + 1;
-    }
-  }
-
-  addEventListener("keydown", (e) => {
-    if (["Space","ArrowUp","KeyW"].includes(e.code)) { e.preventDefault(); tryJump(); }
-  });
-  ["pointerdown","click"].forEach(evt => canvas.addEventListener(evt, (e) => { e.preventDefault(); tryJump(); }));
-
-  // Spawners
-  function spawnObstacle() {
-    const { groundY, w: canvasW } = M();
-    const type = obstacleSelect.value;
-    const x = canvasW + rand(20, 80);
-    const w = Math.round(rand(18, 28));
-    const h = Math.round(rand(44, 84));
-    obstacles.push({ x, y: groundY - h, w, h, type });
-
-    if (Math.random() < 0.22) {
-      const gap = Math.round(rand(100, 160));
-      const h2 = Math.round(rand(40, 80));
-      obstacles.push({ x: x + gap, y: groundY - h2, w: Math.round(rand(16, 24)), h: h2, type });
-    }
-  }
-
-  function spawnFlyer() {
-    const { groundY, w: canvasW } = M();
-    const type = flyerSelect.value;
-    const lane = Math.random() < 0.5 ? 1 : 2;
-    const y = (lane === 1) ? groundY - player.h - rand(24,36) : Math.max(60, groundY - player.h - rand(100,140));
-    const size = 36;
-    const x = canvasW + 20;
-    const vx = speed * rand(1.15, 1.6);
-
-    // meteor can be faster and appear higher
-    const extra = (type === "meteor") ? speed * rand(0.4, 0.9) : 0;
-    flyers.push({ x, y, w: size, h: size, vx: vx + extra, flap: 0, type });
-  }
-
-  // Update loop
-  function update(dt) {
-    t += dt;
-
-    // Speed ramp
-    speed = baseSpeed + Math.min(9, t * 0.00075 * baseSpeed);
-
-    // Player physics
-    const { groundY } = M();
-    if (!player.onGround) {
-      player.vy += gravity;
-      player.y += player.vy;
-      if (player.y + player.h >= groundY) {
-        player.y = groundY - player.h;
-        player.vy = 0;
-        player.onGround = true;
-        // reset air jump count when landing
-        window.airJumpsUsed = 0;
-      }
-    }
-
-    // timers for invulnerability and collision message
-    if (invulnerableTimer > 0) invulnerableTimer = Math.max(0, invulnerableTimer - dt);
-    if (collisionMessageTimer > 0) {
-      collisionMessageTimer = Math.max(0, collisionMessageTimer - dt);
-      if (collisionMessageTimer === 0) collisionMessage = '';
-    }
-
-    // Difficulty ramp based on score
-if (score < 500) {
-  spawnMin = 1600; spawnMax = 2400;
-  flyerGap = 999999; // no flyers
-} else if (score < 1000) {
-  spawnMin = 1100; spawnMax = 1800;
-  flyerGap = 999999; // still no flyers
-} else if (score < 2000) {
-  spawnMin = 800; spawnMax = 1400;
-  flyerGap = 4200;
-} else {
-  spawnMin = 520; spawnMax = 900;
-  flyerGap = 3000;
-}
-
-// Spawn obstacles
-const gapNow = (spawnMin + Math.random() * (spawnMax - spawnMin)) / (1 + (speed - baseSpeed) * 0.08);
-if (t - lastSpawn > gapNow) { spawnObstacle(); lastSpawn = t; }
-
-// Spawn flyers only after score > 1000
-if (score > 1000 && t - lastFlyerSpawn > flyerGap * rand(0.8, 1.2)) {
-  spawnFlyer(); lastFlyerSpawn = t;
-}
-
-
-    // Move obstacles and collide
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-      const ob = obstacles[i];
-      ob.x -= speed;
-      if (ob.x + ob.w < -40) { obstacles.splice(i,1); continue; }
-      if (invulnerableTimer <= 0 && overlap(player.x+6, player.y+4, player.w-12, player.h-8, ob.x, ob.y, ob.w, ob.h)) {
-        // remove the obstacle to avoid immediate re-collision
-        obstacles.splice(i,1);
-        // lose a life and respawn if possible, pass the obstacle type
-        loseLife(ob.type || 'bamboo');
-        continue;
-      }
-    }
-
-    // Move flyers and collide
-    for (let i = flyers.length - 1; i >= 0; i--) {
-      const f = flyers[i];
-      f.x -= f.vx;
-      f.flap += dt * 0.01;
-      if (f.x + f.w < -40) { flyers.splice(i,1); continue; }
-      if (invulnerableTimer <= 0 && overlap(player.x+6, player.y+6, player.w-12, player.h-12, f.x, f.y, f.w, f.h)) {
-        flyers.splice(i,1);
-        // pass flyer type so we can show a specific message (e.g., mango)
-        loseLife(f.type || 'flyer');
-        continue;
-      }
-    }
-
-    // Score
-    score += speed * 0.12;
-    updateScores();
-  }
-
-  function endGame() {
-    running = false; gameOver = true;
-    best = Math.max(best, Math.floor(score));
-    localStorage.setItem("highscore_" + (window.playerName || "Anonymous"), String(best));
-    bestScores[window.playerName || "Anonymous"] = Math.max(bestScores[window.playerName || "Anonymous"] || 0, best);
-    localStorage.setItem('bestScores', JSON.stringify(bestScores));
-    renderLeaderboard();
-  }
-
-  function loseLife(){
-    // placeholder - replaced by typed variant
-  }
-
-  // typed loseLife: accepts a reason (e.g., 'bamboo', 'mango', etc.)
-  function loseLife(reason){
-    // decrement hearts and handle respawn or game over
-    heartsRemaining = Math.max(0, heartsRemaining - 1);
-    updateLives();
-
-    // set collision message depending on reason
-    if (reason && String(reason).toLowerCase().includes('mango')) {
-      collisionMessage = 'Ananth Was Hit By The Mangoess!';
-    } else if (reason && String(reason).toLowerCase().includes('bat')) {
-      collisionMessage = 'Ananth Was Hit By A Bat!';
-    } else {
-      collisionMessage = 'Ananth Was Hit By The Bamboos!';
-    }
-    collisionMessageTimer = 1400;
-    invulnerableTimer = 1400;
-    // reset player to ground so they can continue from same score/difficulty
-    const { groundY } = M();
-    player.y = groundY - player.h;
-    player.vy = 0;
-    player.onGround = true;
-    window.airJumpsUsed = 0;
-
-    // show a tinted popup box when hit by a flying type (mango or others)
-    if (reason && (String(reason).toLowerCase().includes('mango') || String(reason).toLowerCase().includes('flyer') || String(reason).toLowerCase().includes('bat'))) {
-      showTintBox(collisionMessage);
-    }
-
-    if (heartsRemaining <= 0) {
-      // no more lives: end the run after a short delay
-      setTimeout(() => endGame(), 250);
-    }
-
-    // spawn a pop animation at the HUD
-    try { spawnHeartPop(); } catch (e) { }
-  }
-
-  // create a small tinted box popup for flyer hits
-  function showTintBox(text){
-    try {
-      const box = document.createElement('div');
-      box.className = 'tint-box';
-      box.textContent = text;
-      document.body.appendChild(box);
-      setTimeout(()=>{ box.classList.add('visible'); }, 20);
-      setTimeout(()=>{ box.classList.remove('visible'); setTimeout(()=>box.remove(),300); }, 1400);
-    } catch (e) { console.warn('tint box failed', e); }
-  }
-
-  function spawnHeartPop(){
-    if (!livesIcons) return;
-    const rect = livesIcons.getBoundingClientRect();
-    // estimate position for popped heart: use proportion based on remaining hearts
-    const total = 5;
-    const idx = Math.max(0, Math.min(total - 1, heartsRemaining));
-    const x = rect.left + (rect.width / total) * (idx + 0.5);
-    const y = rect.top + rect.height / 2;
-
-    const el = document.createElement('div');
-    el.className = 'heart-pop';
-    el.textContent = '♥';
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    document.body.appendChild(el);
-    el.addEventListener('animationend', () => { try { el.remove(); } catch (e) {} });
-  }
-
-  // Render
-  function render() {
-    const m = M();
-    if (!ctx) {
-      console.error("Context is null!");
-      return;
-    }
-    ctx.clearRect(0, 0, m.w, m.h);
-    drawBackground(m);
-
-    obstacles.forEach(drawObstacle);
-    flyers.forEach(drawFlyer);
-
-    drawPlayers(ctx, player);
-    drawParticles();
-    drawHUD(m);
-  }
-
-  // Background switcher (Trivandrum / Iceberg / Lava / Fuji)
-  function drawBackground(m) {
-    const bg = backgroundSelect.value;
-    switch (bg) {
-      case "trivandrum":
-        drawTrivandrumSky(m);
-        drawBackwaters(m);
-        drawCitySilhouettes(m);
-        drawGround(m);
-        break;
-      case "iceberg":
-        drawIcebergSky(m);
-        drawIcebergSea(m);
-        drawIcebergs(m);
-        drawSnowGround(m);
-        break;
-      case "lava":
-        drawLavaSky(m);
-        drawVolcano(m);
-        drawLavaField(m);
-        drawBasaltGround(m);
-        break;
-      case "fuji":
-        drawFujiSky(m);
-        drawFujiMountain(m);
-        drawFujiLake(m);
-        drawFujiGround(m);
-        break;
-      default:
-        ctx.fillStyle = "#1a3a52";
-        ctx.fillRect(0, 0, m.w, m.h);
-        ctx.fillStyle = "#0d1f2d";
-        ctx.fillRect(0, m.groundY, m.w, m.h - m.groundY);
-    }
-  }
-
-  // -------- Trivandrum --------
-  function drawTrivandrumSky(m) {
-    const grd = ctx.createLinearGradient(0,0,0,m.h);
-    grd.addColorStop(0, "#2b4a7f");
-    grd.addColorStop(0.35, "#355d9a");
-    grd.addColorStop(0.7, "#3a6aa6");
-    grd.addColorStop(1, "#0f2a47");
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,m.w,m.h);
-
-    ctx.fillStyle = "rgba(255,255,255,0.10)";
-    const k = (t * 0.02) % (m.w + 300);
-    for (let i=0;i<4;i++){
-      const x = m.w - (k + i*220) + 150;
-      cloud(x, 60 + i*22, 80 - i*10, 28 - i*4);
-    }
-
-    const moonX = m.w * 0.8, moonY = m.h * 0.18;
-    const g2 = ctx.createRadialGradient(moonX, moonY, 4, moonX, moonY, 40);
-    g2.addColorStop(0,"#fffde8");
-    g2.addColorStop(1,"rgba(255,253,232,0)");
-    ctx.fillStyle = g2;
-    ctx.beginPath(); ctx.arc(moonX, moonY, 40, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#fffbe0";
-    ctx.beginPath(); ctx.arc(moonX, moonY, 8, 0, Math.PI*2); ctx.fill();
-  }
-  function cloud(x,y,w,h){
-    ctx.beginPath();
-    ctx.ellipse(x, y, w*0.35, h*0.55, 0, 0, Math.PI*2);
-    ctx.ellipse(x+w*0.28, y+4, w*0.32, h*0.48, 0, 0, Math.PI*2);
-    ctx.ellipse(x-w*0.26, y+8, w*0.30, h*0.45, 0, 0, Math.PI*2);
-    ctx.fill();
-  }
-  function drawBackwaters(m){
-    const bands = [
-      { y: m.h*0.70, c:"#0e3a54" },
-      { y: m.h*0.75, c:"#0d3046" },
-      { y: m.h*0.80, c:"#0c283b" }
-    ];
-    bands.forEach(b => {
-      ctx.fillStyle = b.c;
-      ctx.fillRect(0, b.y, m.w, m.h - b.y);
-      ctx.strokeStyle = "rgba(255,255,255,0.06)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x=0; x<m.w; x+=18){
-        const y = b.y + 6 + Math.sin((x + t*0.15) * 0.05) * 2;
-        ctx.moveTo(x, y);
-        ctx.lineTo(x+12, y + Math.sin((x+40 + t*0.15)*0.05));
-      }
-      ctx.stroke();
+    // CTA behaviors (no backend; feel free to wire these later)
+    document.getElementById('notifyBtn').addEventListener('click', () => {
+      alert('We’ll ping you when ANANTH JUMP relaunches. (Hook this to your mailing list later.)');
     });
-
-    const y = m.h*0.73;
-    const x = (m.w - ((t*0.04) % (m.w+240))) - 120;
-    ctx.fillStyle = "#082133";
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(x+40, y-20, x+120, y-18);
-    ctx.quadraticCurveTo(x+160, y-16, x+200, y);
-    ctx.lineTo(x+200, y+8);
-    ctx.lineTo(x, y+8);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#0a2a40";
-    ctx.fillRect(x+48, y-30, 76, 22);
-    ctx.fillStyle = "rgba(255,220,160,0.65)";
-    for(let i=0;i<3;i++){ ctx.fillRect(x+54+i*24, y-24, 16, 10); }
-  }
-  function drawCitySilhouettes(m){
-    const lx = m.w*0.18, ly = m.h*0.52;
-    ctx.fillStyle = "#0b2740";
-    ctx.fillRect(lx, ly-70, 18, 70);
-    ctx.fillRect(lx-6, ly-20, 30, 20);
-    ctx.beginPath();
-    ctx.moveTo(lx-4, ly-70);
-    ctx.lineTo(lx+9, ly-92);
-    ctx.lineTo(lx+22, ly-70);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "rgba(255,240,180,0.15)";
-    ctx.beginPath();
-    ctx.moveTo(lx+9, ly-92);
-    ctx.lineTo(lx+200, ly-120);
-    ctx.lineTo(lx+200, ly-70);
-    ctx.closePath(); ctx.fill();
-
-    const tx = m.w*0.62, ty = m.h*0.50;
-    ctx.fillStyle = "#0a2540";
-    ctx.beginPath();
-    ctx.moveTo(tx-90, ty+40);
-    ctx.lineTo(tx+90, ty+40);
-    const tiers = 6;
-    for(let i=0;i<tiers;i++){
-      const w = 180 - i*26;
-      const hh = 12;
-      const yy = ty + 40 - (i+1)*hh - i*6;
-      ctx.rect(tx - w/2, yy, w, hh);
-    }
-    ctx.rect(tx-10, ty-44, 20, 10);
-    ctx.rect(tx-4, ty-54, 8, 10);
-    ctx.fill();
-
-    drawPalm(m.w*0.30, m.h*0.66, 70, -0.18);
-    drawPalm(m.w*0.36, m.h*0.66, 90, 0.12);
-    drawPalm(m.w*0.82, m.h*0.66, 80, -0.05);
-    drawPalm(m.w*0.88, m.h*0.66, 60, 0.20);
-  }
-  function drawPalm(x, y, h, tilt){
-    ctx.save();
-    ctx.translate(x,y);
-    ctx.rotate(tilt);
-    ctx.fillStyle = "#082133";
-    ctx.beginPath();
-    ctx.moveTo(0,0); ctx.lineTo(8,0); ctx.lineTo(4,-h); ctx.lineTo(-4,-h); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#0c2e46";
-    for(let i=0;i<6;i++){
-      const a = -Math.PI/2 + i*(Math.PI/5);
-      ctx.beginPath();
-      ctx.ellipse(4 + Math.cos(a)*18, -h + Math.sin(a)*18, 26, 8, a, 0, Math.PI*2);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-  function drawGround(m){
-    ctx.fillStyle = "#18364f";
-    ctx.fillRect(0, m.groundY, m.w, m.h - m.groundY);
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, m.groundY + 0.5);
-    ctx.lineTo(m.w, m.groundY + 0.5);
-    ctx.stroke();
-  }
-
-  // -------- Iceberg --------
-  function drawIcebergSky(m) {
-    const grd = ctx.createLinearGradient(0,0,0,m.h);
-    grd.addColorStop(0, "#cfe9ff");
-    grd.addColorStop(0.6, "#a9d4f4");
-    grd.addColorStop(1, "#7fb7e6");
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,m.w,m.h);
-
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
-    const k = (t * 0.03) % (m.w + 300);
-    for (let i=0;i<3;i++){
-      const x = m.w - (k + i*260) + 180;
-      cloud(x, 60 + i*30, 90 - i*12, 34 - i*6);
-    }
-
-    const sunX = m.w * 0.82, sunY = m.h * 0.18;
-    ctx.fillStyle = "#fff7cc";
-    ctx.beginPath(); ctx.arc(sunX, sunY, 22, 0, Math.PI*2); ctx.fill();
-  }
-  function drawIcebergSea(m) {
-    ctx.fillStyle = "#4da2cf";
-    ctx.fillRect(0, m.h*0.72, m.w, m.h*0.28);
-    ctx.strokeStyle = "rgba(255,255,255,0.3)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x=0; x<m.w; x+=16){
-      const y = m.h*0.78 + Math.sin((x + t*0.12)*0.05)*3;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x+12, y + Math.sin((x+30 + t*0.12)*0.05));
-    }
-    ctx.stroke();
-  }
-  function drawIcebergs(m) {
-    const y = m.h*0.70;
-    const x = (m.w - ((t*0.035) % (m.w+320))) - 160;
-    ctx.fillStyle = "#eaf6ff";
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x+40, y-18);
-    ctx.lineTo(x+100, y-30);
-    ctx.lineTo(x+160, y-20);
-    ctx.lineTo(x+200, y);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#cfe2f0";
-    ctx.fillRect(x+60, y-18, 60, 8);
-  }
-  function drawSnowGround(m) {
-    ctx.fillStyle = "#dceefb";
-    ctx.fillRect(0, m.groundY, m.w, m.h - m.groundY);
-    ctx.fillStyle = "rgba(255,255,255,0.5)";
-    for (let i=0;i<m.w;i+=26){
-      ctx.fillRect(i, m.groundY + 6 + Math.sin((i+t*0.08)*0.1)*2, 18, 2);
-    }
-  }
-
-  // -------- Lava --------
-  function drawLavaSky(m) {
-    const grd = ctx.createLinearGradient(0,0,0,m.h);
-    grd.addColorStop(0, "#1b0f19");
-    grd.addColorStop(0.5, "#2a121f");
-    grd.addColorStop(1, "#3a1520");
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,m.w,m.h);
-
-    ctx.fillStyle = "rgba(120,80,90,0.25)";
-    const k = (t * 0.025) % (m.w + 300);
-    for (let i=0;i<4;i++){
-      const x = m.w - (k + i*200) + 140;
-      cloud(x, 70 + i*24, 80 - i*10, 30 - i*4);
-    }
-
-    const sunX = m.w * 0.14, sunY = m.h * 0.22;
-    const g = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 38);
-    g.addColorStop(0,"#ffb866");
-    g.addColorStop(1,"rgba(255,184,102,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(sunX, sunY, 38, 0, Math.PI*2); ctx.fill();
-  }
-  function drawVolcano(m) {
-    const baseY = m.h*0.70;
-    const cx = m.w*0.58;
-    ctx.fillStyle = "#362b2b";
-    ctx.beginPath();
-    ctx.moveTo(cx-120, baseY);
-    ctx.lineTo(cx, baseY-160);
-    ctx.lineTo(cx+120, baseY);
-    ctx.closePath(); ctx.fill();
-
-    ctx.fillStyle = "#ff5a2a";
-    ctx.beginPath();
-    ctx.ellipse(cx, baseY-160, 24, 6, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,100,40,0.75)";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    const sway = Math.sin(t*0.006)*8;
-    ctx.moveTo(cx, baseY-160);
-    ctx.quadraticCurveTo(cx+18+sway, baseY-190, cx+sway, baseY-220);
-    ctx.stroke();
-  }
-  function drawLavaField(m) {
-    ctx.fillStyle = "#3a1b1b";
-    ctx.fillRect(0, m.h*0.72, m.w, m.h*0.28);
-    ctx.strokeStyle = "#ff5a2a";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for(let x=0;x<m.w;x+=22){
-      const y = m.h*0.78 + Math.sin((x+t*0.18)*0.04)*6;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x+16, y + Math.sin((x+30+t*0.18)*0.04)*6);
-    }
-    ctx.stroke();
-  }
-  function drawBasaltGround(m) {
-    ctx.fillStyle = "#2b1f1f";
-    ctx.fillRect(0, m.groundY, m.w, m.h - m.groundY);
-    ctx.strokeStyle = "rgba(255,120,80,0.4)";
-    ctx.beginPath();
-    ctx.moveTo(0, m.groundY+0.5);
-    ctx.lineTo(m.w, m.groundY+0.5);
-    ctx.stroke();
-  }
-
-  // -------- Fuji --------
-  function drawFujiSky(m) {
-    const grd = ctx.createLinearGradient(0,0,0,m.h);
-    grd.addColorStop(0, "#98c9ff");
-    grd.addColorStop(0.55, "#b7ddff");
-    grd.addColorStop(1, "#e3f3ff");
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,m.w,m.h);
-
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
-    const k = (t * 0.02) % (m.w + 300);
-    for (let i=0;i<4;i++){
-      const x = m.w - (k + i*220) + 150;
-      cloud(x, 70 + i*28, 90 - i*12, 32 - i*5);
-    }
-
-    const sunX = m.w * 0.85, sunY = m.h * 0.20;
-    ctx.fillStyle = "#ffd79e";
-    ctx.beginPath(); ctx.arc(sunX, sunY, 20, 0, Math.PI*2); ctx.fill();
-  }
-  function drawFujiMountain(m) {
-    const baseY = m.h*0.72;
-    const cx = m.w*0.50;
-    ctx.fillStyle = "#6d88a8";
-    ctx.beginPath();
-    ctx.moveTo(cx-160, baseY);
-    ctx.lineTo(cx, baseY-180);
-    ctx.lineTo(cx+160, baseY);
-    ctx.closePath(); ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.moveTo(cx-40, baseY-140);
-    ctx.lineTo(cx, baseY-180);
-    ctx.lineTo(cx+40, baseY-140);
-    ctx.closePath(); ctx.fill();
-  }
-  function drawFujiLake(m) {
-    ctx.fillStyle = "#7bb3e6";
-    ctx.fillRect(0, m.h*0.74, m.w, m.h*0.26);
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x=0;x<m.w;x+=18){
-      const y = m.h*0.80 + Math.sin((x+t*0.12)*0.06)*2;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x+12, y + Math.sin((x+30+t*0.12)*0.06));
-    }
-    ctx.stroke();
-  }
-  function drawFujiGround(m) {
-    ctx.fillStyle = "#8fa9bf";
-    ctx.fillRect(0, m.groundY, m.w, m.h - m.groundY);
-    ctx.strokeStyle = "rgba(255,255,255,0.4)";
-    ctx.beginPath();
-    ctx.moveTo(0, m.groundY+0.5);
-    ctx.lineTo(m.w, m.groundY+0.5);
-    ctx.stroke();
-  }
-
-  // -------- Obstacles (switcher) --------
-  function drawObstacle(ob){
-    switch (ob.type) {
-      case "bamboo": drawBamboo(ob); break;
-      case "dry": drawDryStick(ob); break;
-      case "iceberg": drawIcebergObstacle(ob); break;
-      case "rock": drawRock(ob); break;
-      default: drawBamboo(ob); break;
-    }
-  }
-  function drawBamboo(ob){
-    ctx.fillStyle = "#2e8b57";
-    ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
-    ctx.fillStyle = "#276e48";
-    for(let y=ob.y+6; y<ob.y+ob.h; y+=14){ ctx.fillRect(ob.x-2, y, ob.w+4, 3); }
-    ctx.fillStyle = "#3da75f";
-    ctx.beginPath();
-    ctx.moveTo(ob.x + ob.w, ob.y + 10);
-    ctx.quadraticCurveTo(ob.x + ob.w + 18, ob.y + 0, ob.x + ob.w + 12, ob.y + 16);
-    ctx.quadraticCurveTo(ob.x + ob.w + 8, ob.y + 14, ob.x + ob.w + 2, ob.y + 14);
-    ctx.fill();
-  }
-  function drawDryStick(ob){
-    ctx.fillStyle = "#8b5a2b";
-    ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
-    ctx.strokeStyle = "#5c3a1a";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(ob.x + ob.w*0.15, ob.y + ob.h*0.20);
-    ctx.lineTo(ob.x + ob.w*0.85, ob.y + ob.h*0.80);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ob.x + ob.w*0.70, ob.y + ob.h*0.10);
-    ctx.lineTo(ob.x + ob.w*0.30, ob.y + ob.h*0.60);
-    ctx.stroke();
-  }
-  function drawIcebergObstacle(ob){
-    ctx.fillStyle = "#cfe9ff";
-    ctx.beginPath();
-    ctx.moveTo(ob.x, ob.y + ob.h);
-    ctx.lineTo(ob.x + ob.w*0.5, ob.y + ob.h*0.05);
-    ctx.lineTo(ob.x + ob.w, ob.y + ob.h);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#a9d4f4";
-    ctx.fillRect(ob.x + ob.w*0.35, ob.y + ob.h*0.45, ob.w*0.3, 4);
-  }
-  function drawRock(ob){
-    ctx.fillStyle = "#666";
-    ctx.beginPath();
-    ctx.ellipse(ob.x + ob.w/2, ob.y + ob.h/2, ob.w*0.52, ob.h*0.46, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = "#7a7a7a";
-    ctx.beginPath();
-    ctx.ellipse(ob.x + ob.w*0.55, ob.y + ob.h*0.40, ob.w*0.18, ob.h*0.14, -0.3, 0, Math.PI*2);
-    ctx.fill();
-  }
-
-  // -------- Flyers (switcher: bat, mango, lollipop, meteor) --------
-  function drawFlyer(f){
-    switch (f.type) {
-      case "bat": drawBat(f); break;
-      case "mango": drawMango(f); break;
-      case "lollipop": drawLollipop(f); break;
-      case "meteor": drawMeteor(f); break;
-      default: drawLollipop(f); break;
-    }
-  }
-  function drawBat(f) {
-    const flap = Math.sin(f.flap) * 6;
-    const cx = f.x + f.w*0.5, cy = f.y + f.h*0.5;
-    // body
-    ctx.fillStyle = "#2a2a33";
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, f.w*0.22, f.h*0.26, 0, 0, Math.PI*2);
-    ctx.fill();
-    // wings
-    ctx.fillStyle = "#1e1e27";
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.quadraticCurveTo(cx - f.w*0.40, cy - flap*0.3, cx - f.w*0.55, cy + flap*0.2);
-    ctx.quadraticCurveTo(cx - f.w*0.30, cy + flap*0.4, cx, cy);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.quadraticCurveTo(cx + f.w*0.40, cy + flap*0.3, cx + f.w*0.55, cy - flap*0.2);
-    ctx.quadraticCurveTo(cx + f.w*0.30, cy - flap*0.4, cx, cy);
-    ctx.fill();
-    // eyes
-    ctx.fillStyle = "#ffec9a";
-    ctx.beginPath(); ctx.arc(cx-4, cy-2, 2, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+4, cy-2, 2, 0, Math.PI*2); ctx.fill();
-  }
-  function drawMango(f) {
-    const flap = Math.sin(f.flap) * 3;
-    const cx = f.x + f.w*0.5, cy = f.y + f.h*0.5 + flap*0.2;
-    ctx.fillStyle = "#f6b21a";
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, f.w*0.30, f.h*0.40, -0.2, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = "#228b22";
-    ctx.beginPath();
-    ctx.arc(cx + f.w*0.12, cy - f.h*0.28, 4, 0, Math.PI*2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(cx + f.w*0.12, cy - f.h*0.28);
-    ctx.quadraticCurveTo(cx + f.w*0.24, cy - f.h*0.36, cx + f.w*0.30, cy - f.h*0.34);
-    ctx.strokeStyle = "#228b22"; ctx.lineWidth = 2; ctx.stroke();
-    // shine
-    ctx.fillStyle = "rgba(255,255,255,0.25)";
-    ctx.beginPath();
-    ctx.ellipse(cx - f.w*0.10, cy - f.h*0.06, f.w*0.12, f.h*0.10, 0, 0, Math.PI*2);
-    ctx.fill();
-  }
-  function drawLollipop(f){
-    const flap = Math.sin(f.flap) * 4;
-    // stick
-    ctx.strokeStyle = "#f0e7dc";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(f.x + f.w*0.15, f.y + f.h*0.65 + flap*0.2);
-    ctx.lineTo(f.x + f.w*0.15, f.y + f.h*0.95 + flap*0.2);
-    ctx.stroke();
-    // candy
-    const cx = f.x + f.w*0.55;
-    const cy = f.y + f.h*0.48 + flap*0.2;
-    ctx.fillStyle = "#d24b2a";
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, f.w*0.40, f.h*0.36, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.25)";
-    ctx.beginPath();
-    ctx.ellipse(cx - f.w*0.12, cy - f.h*0.10, f.w*0.16, f.h*0.10, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = "#bf3f22";
-    ctx.beginPath();
-    ctx.ellipse(cx + f.w*0.10, cy - f.h*0.02 + flap, f.w*0.18, f.h*0.10, -0.5, 0, Math.PI*2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx - f.w*0.10, cy + f.h*0.02 - flap, f.w*0.18, f.h*0.10, 0.5, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
-    for (let i=0;i<4;i++){
-      ctx.fillRect(cx - f.w*0.20 + i*6, cy - f.h*0.06 + (i%2?2:-1), 2, 2);
-    }
-  }
-  function drawMeteor(f){
-    const trail = Math.sin(f.flap*0.5)*2;
-    // body
-    ctx.fillStyle = "#ffa14a";
-    ctx.beginPath();
-    ctx.ellipse(f.x + f.w*0.5, f.y + f.h*0.5, f.w*0.45, f.h*0.30, -0.6, 0, Math.PI*2);
-    ctx.fill();
-    // glow
-    const gx = f.x + f.w*0.4, gy = f.y + f.h*0.5;
-    const g = ctx.createRadialGradient(gx, gy, 6, gx, gy, 34);
-    g.addColorStop(0, "rgba(255,180,90,0.8)");
-    g.addColorStop(1, "rgba(255,180,90,0.0)");
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(gx, gy, 34, 0, Math.PI*2); ctx.fill();
-    // trail
-    ctx.strokeStyle = "rgba(255,140,60,0.7)";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(f.x + f.w*0.2, f.y + f.h*0.5 + trail);
-    ctx.lineTo(f.x - f.w*0.2, f.y + f.h*0.6 + trail);
-    ctx.stroke();
-  }
-
-  // -------- Player --------
-  function drawPlayer(){
-    const { groundY } = M();
-    const x = player.x, y = player.y, w = player.w, h = player.h;
-
-    const shadowScale = Math.max(0.25, 1 - (groundY - (y+h)) / 160);
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.beginPath(); ctx.ellipse(x + w*0.46, groundY + 6, 26*shadowScale, 6*shadowScale, 0, 0, Math.PI*2); ctx.fill();
-
-    // Draw the selected animal sprite
-    const animal = animalSelect.value;
-    if (animal === "lion") {
-      drawLion(x, y, w, h);
-    } else if (animal === "deer") {
-      drawDeer(x, y, w, h);
-    } else {
-      drawElephant(x, y, w, h);
-    }
-  }
-
-  function drawParticles() {
-    // Particle effects removed
-  }
-
-  function roundRect(x,y,w,h,r,fill){
-    if (w < 2*r) r = w/2; if (h < 2*r) r = h/2;
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);
-    ctx.arcTo(x+w,y, x+w,y+h, r);
-    ctx.arcTo(x+w,y+h, x,y+h, r);
-    ctx.arcTo(x,y+h, x,y, r);
-    ctx.arcTo(x,y, x+w,y, r);
-    if (fill) ctx.fill(); else ctx.stroke(); 
-  }
-  function drawElephant(x,y,w,h){
-    ctx.fillStyle = "#93a3b8";
-    roundRect(x, y + 6, w * 0.72, h * 0.72, 10, true);
-    roundRect(x + w * 0.48, y, w * 0.44, h * 0.56, 10, true);
-    ctx.fillStyle = "#8294ad";
-    roundRect(x + w * 0.44, y + h * 0.10, w * 0.22, h * 0.26, 8, true);
-    ctx.fillStyle = "#93a3b8";
-    ctx.beginPath();
-    ctx.moveTo(x + w * 0.90, y + h * 0.28);
-    ctx.quadraticCurveTo(x + w * 1.02, y + h * 0.42, x + w * 0.86, y + h * 0.50);
-    ctx.quadraticCurveTo(x + w * 0.82, y + h * 0.58, x + w * 0.96, y + h * 0.60);
-    ctx.lineTo(x + w * 1.02, y + h * 0.56);
-    ctx.quadraticCurveTo(x + w * 1.10, y + h * 0.46, x + w * 0.96, y + h * 0.28);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#152033";
-    ctx.beginPath(); ctx.arc(x + w * 0.82, y + h * 0.24, 3, 0, Math.PI*2); ctx.fill();
-    const step = Math.sin(t * 0.02) * (player.onGround ? 1 : 0.3);
-    ctx.fillStyle = "#8294ad";
-    roundRect(x + 8,  y + h*0.70, 10, 14 + step, 3, true);
-    roundRect(x + 24, y + h*0.70, 10, 14 - step, 3, true);
-    roundRect(x + 40, y + h*0.70, 10, 14 + step, 3, true);
-    ctx.fillStyle = "#ffffff";
-    ctx.globalAlpha = 0.9;
-    ctx.font = "9px system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("Ananth", x - 6, y - 6);
-    ctx.globalAlpha = 1;
-  }
-  function drawLion(x,y,w,h){
-    ctx.fillStyle = "#caa552";
-    roundRect(x, y+8, w*0.70, h*0.60, 10, true);
-    ctx.fillStyle = "#8c5a2b";
-    roundRect(x + w*0.50 - 6, y - 2, w*0.36 + 12, h*0.36 + 8, 12, true);
-    ctx.fillStyle = "#caa552";
-    roundRect(x + w*0.54, y + 4, w*0.30, h*0.28, 10, true);
-    ctx.fillStyle = "#231e1a";
-    ctx.beginPath(); ctx.arc(x + w*0.78, y + h*0.20, 2.5, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = "#caa552"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(x+6, y+h*0.55); ctx.quadraticCurveTo(x-10, y+h*0.40, x-4, y+h*0.30); ctx.stroke();
-    ctx.fillStyle = "#8c5a2b"; ctx.beginPath(); ctx.arc(x-4, y+h*0.30, 3, 0, Math.PI*2); ctx.fill();
-    const step = Math.sin(t * 0.02) * (player.onGround ? 1 : 0.3);
-    ctx.fillStyle = "#caa552";
-    roundRect(x + 8,  y + h*0.70, 10, 12 + step, 3, true);
-    roundRect(x + 26, y + h*0.70, 10, 12 - step, 3, true);
-    roundRect(x + 42, y + h*0.70, 10, 12 + step, 3, true);
-  }
-  function drawDeer(x,y,w,h){
-    ctx.fillStyle = "#8B4513";
-    roundRect(x, y+8, w*0.70, h*0.60, 10, true);
-    ctx.fillStyle = "#654321";
-    roundRect(x + w*0.50 - 6, y - 2, w*0.36 + 12, h*0.36 + 8, 12, true);
-    ctx.fillStyle = "#8B4513";
-    roundRect(x + w*0.54, y + 4, w*0.30, h*0.28, 10, true);
-    ctx.fillStyle = "#000";
-    ctx.beginPath(); ctx.arc(x + w*0.78, y + h*0.20, 2.5, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = "#8B4513"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(x+6, y+h*0.55); ctx.quadraticCurveTo(x-10, y+h*0.40, x-4, y+h*0.30); ctx.stroke();
-    ctx.fillStyle = "#654321"; ctx.beginPath(); ctx.arc(x-4, y+h*0.30, 3, 0, Math.PI*2); ctx.fill();
-    const step = Math.sin(t * 0.02) * (player.onGround ? 1 : 0.3);
-    ctx.fillStyle = "#8B4513";
-    roundRect(x + 8,  y + h*0.70, 10, 12 + step, 3, true);
-    roundRect(x + 26, y + h*0.70, 10, 12 - step, 3, true);
-    roundRect(x + 42, y + h*0.70, 10, 12 + step, 3, true);
-    // Add antlers
-    ctx.strokeStyle = "#654321"; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x + w*0.60, y - 4);
-    ctx.lineTo(x + w*0.65, y - 12);
-    ctx.moveTo(x + w*0.65, y - 12);
-    ctx.lineTo(x + w*0.70, y - 8);
-    ctx.moveTo(x + w*0.65, y - 12);
-    ctx.lineTo(x + w*0.62, y - 16);
-    ctx.stroke();
-  }
-
-  // -------- HUD --------
-  function drawHUD(m){
-    ctx.font = "18px system-ui, sans-serif";
-    ctx.fillStyle = "#e6f2ff";
-    ctx.textAlign = "center";
-    ctx.globalAlpha = 0.92;
-    // collision message takes priority
-    if (collisionMessage && collisionMessageTimer > 0) {
-      ctx.fillStyle = "#ffdfdf";
-      ctx.font = "20px system-ui, sans-serif";
-      ctx.fillText(collisionMessage, m.w/2, m.h/2 - 8);
-      ctx.globalAlpha = 1;
-      return;
-    }
-    if (!running && !gameOver) {
-      ctx.fillText("Tap or press Space to start", m.w/2, m.h/2 - 8);
-      ctx.globalAlpha = 0.7;
-      ctx.font = "12px system-ui, sans-serif";
-      ctx.fillText("Jump over obstacles — dodge the flying objects!", m.w/2, m.h/2 + 18);
-    } else if (gameOver) {
-      ctx.fillText("You hit an obstacle!", m.w/2, m.h/2 - 8);
-      ctx.globalAlpha = 0.8;
-      ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText("Tap or press Space to try again", m.w/2, m.h/2 + 18);
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  // -------- Main loop --------
-  let lastTime = 0;
-  function loop(ts) {
-    try {
-      const dt = ts - (lastTime || ts);
-      lastTime = ts;
-      if (!running) {
-        // if not running, just bail
-        return;
-      }
-
-      if (paused) {
-        // when paused, skip update but still render current frame and overlay
-        render();
-        // draw pause overlay directly onto canvas
-        try {
-          const m = M();
-          ctx.save();
-          ctx.fillStyle = 'rgba(0,0,0,0.45)';
-          ctx.fillRect(0, 0, m.w, m.h);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '36px system-ui, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('PAUSED', m.w/2, m.h/2);
-          ctx.restore();
-        } catch (e) {}
-        requestAnimationFrame(loop);
-        return;
-      }
-
-      update(dt);
-      render();
-      if (isMultiplayer) sendState();
-
-      if (running) requestAnimationFrame(loop);
-    } catch (err) {
-      console.error("Game loop error:", err);
-    }
-  }
-  function startGame() {
-    if (!window.playerName) {
-      const name = prompt("Enter your name:");
-      window.playerName = name ? name.trim() : "Anonymous";
-    }
-    const ui = document.getElementById("ui");
-    if (ui) ui.style.display = "none";
-    const root = document.getElementById("root");
-    if (root) root.style.display = "none";
-    const gc = document.getElementById("gameContainer");
-    if (gc) gc.style.display = "block";
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) backBtn.style.display = "block";
-
-    // Initialize game state and start loop
-    reset();
-    lastTime = 0;
-    running = true;
-    gameOver = false;
-    requestAnimationFrame(loop);
-  }
-  
-  function backToStart() {
-    running = false;
-    gameOver = false;
-    
-    const root = document.getElementById("root");
-    if (root) root.style.display = "flex";
-    const ui = document.getElementById("ui");
-    if (ui) ui.style.display = "flex";
-    const gc = document.getElementById("gameContainer");
-    if (gc) gc.style.display = "none";
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) backBtn.style.display = "none";
-  }
-  
-  function startSinglePlayer() {
-    document.getElementById('mode-select').style.display = 'none';
-    isMultiplayer = false;
-    // Start the game as single player
-    startGame();
-  }
-
-  function startMultiplayerLoop() {
-    document.getElementById('room-popup').style.display = 'none';
-    isMultiplayer = true;
-    // Start the game
-    startGame();
-  }
-  
-  // expose for inline onclick handlers
-  window.startGame = startGame;
-  window.backToStart = backToStart;
-  window.startSinglePlayer = startSinglePlayer;
-  window.startMultiplayerLoop = startMultiplayerLoop;
-
-  // pause toggle
-  function togglePause(){
-    if (!running || gameOver) return;
-    paused = !paused;
-  }
-  document.addEventListener('keydown', (e)=>{ if (e.code === 'KeyP') { e.preventDefault(); togglePause(); } });
-
-  // Initial render after DOM is ready
-  function initializeGame() {
-    try {
-      render();
-    } catch (err) {
-      console.warn("Initial render error:", err);
-    }
-    setTimeout(() => {
-      try {
-        canvas.focus();
-      } catch (err) {
-        console.warn("Canvas focus error:", err);
-      }
-    }, 60);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeGame);
-  } else {
-    initializeGame();
-  }
-})();
-</script>
-
-<!-- Floating settings icon and modal (shows only settings when opened) -->
-<!-- Hidden realistic settings template (used by modal) -->
-<template id="settingsTemplate">
-  <div class="settings-panel">
-    <h2 style="margin:0 0 8px;">Game Settings</h2>
-    <div class="control">
-      <label>Sound</label>
-      <div class="toggle on" data-key="sound"><div class="knob"></div></div>
-    </div>
-    <div class="control">
-      <label>Music</label>
-      <div class="toggle on" data-key="music"><div class="knob"></div></div>
-    </div>
-    <div class="control">
-      <label>Fullscreen</label>
-      <div class="toggle" data-key="fullscreen"><div class="knob"></div></div>
-    </div>
-    <div class="control">
-      <label for="animalSelect">Animal</label>
-      <select id="animalSelect">
-        <option value="elephant" selected>Elephant</option>
-        <option value="lion">Lion</option>
-        <option value="deer">Deer</option>
-      </select>
-    </div>
-    <div class="control">
-      <label for="backgroundSelect">Background</label>
-      <select id="backgroundSelect">
-        <option value="trivandrum">Trivandrum</option>
-        <option value="iceberg">Iceberg</option>
-        <option value="lava">Lava</option>
-        <option value="fuji">Mount Fuji</option>
-      </select>
-    </div>
-    <div class="control">
-      <label for="gravitySlider">Gravity</label>
-      <input type="range" id="gravitySlider" min="0.4" max="1.6" step="0.05" value="0.8" style="width:180px;">
-    </div>
-    <div class="control">
-      <label for="speedSlider">Base speed</label>
-      <input type="range" id="speedSlider" min="4" max="20" step="0.5" value="7" style="width:180px;">
-    </div>
-    <div class="control">
-      <label for="difficultySelect">Difficulty</label>
-      <select id="difficultySelect">
-        <option value="easy">Easy</option>
-        <option value="hard" selected>Hard</option>
-        <option value="extreme">Extreme</option>
-      </select>
-    </div>
-    <div style="margin-top:10px; font-size:12px; opacity:0.9;">Changes to physics apply when you start/restart the game.</div>
-  </div>
-</template>
-<div class="settings-icon" id="settingsIcon" role="button" aria-label="Open settings" title="Settings">
-  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 8.5a3.5 3.5 0 1 0 .001 7.001A3.5 3.5 0 0 0 12 8.5zm8.94 3.5c0-.33-.02-.66-.07-.98l1.96-1.52a.5.5 0 0 0 .11-.66l-1.86-3.22a.5.5 0 0 0-.61-.21l-2.31.93a8.12 8.12 0 0 0-1.7-.98l-.35-2.48A.5.5 0 0 0 14.9 2h-3.8a.5.5 0 0 0-.49.41l-.35 2.48c-.6.26-1.16.6-1.7.98l-2.31-.93a.5.5 0 0 0-.61.21L1.06 8.84a.5.5 0 0 0 .11.66l1.96 1.52c-.05.32-.07.65-.07.98s.02.66.07.98L1.17 17.6a.5.5 0 0 0-.11.66l1.86 3.22c.17.3.55.42.86.27l2.31-.93c.54.38 1.1.72 1.7.98l.35 2.48c.05.28.29.49.57.49h3.8c.28 0 .52-.21.57-.49l.35-2.48c.6-.26 1.16-.6 1.7-.98l2.31.93c.31.13.69.03.86-.27l1.86-3.22a.5.5 0 0 0-.11-.66l-1.96-1.52c.05-.32.07-.65.07-.98z"/></svg>
-  
-</div>
-<div class="settings-modal" id="settingsModal" aria-hidden="true">
-  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <button class="close" id="settingsClose" aria-label="Close settings">×</button>
-    <h2 id="settingsTitle">Settings</h2>
-    <div id="settingsModalContent" style="clear:both; margin-top:8px;"></div>
-  </div>
-</div>
-
-<script>
-(()=>{
-  const icon = document.getElementById('settingsIcon');
-  const modal = document.getElementById('settingsModal');
-  const closeBtn = document.getElementById('settingsClose');
-  const modalContent = document.getElementById('settingsModalContent');
-
-  function removeIds(root){
-    if (!root) return;
-    // preserve ids for the core settings controls so code can reference them
-    const preserve = new Set(['animalSelect','backgroundSelect','gravitySlider','speedSlider','difficultySelect','obstacleSelect','flyerSelect','gravityValue','speedValue','soundToggle','musicToggle','fullscreenToggle']);
-    if (root.id && !preserve.has(root.id) && root.removeAttribute) root.removeAttribute('id');
-    const els = root.querySelectorAll('[id]');
-    for(const el of els) {
-      if (!preserve.has(el.id)) el.removeAttribute('id');
-    }
-  }
-
-  function openSettings(){
-    // use the hidden settings template to provide a realistic settings panel
-    const tmpl = document.getElementById('settingsTemplate');
-    modalContent.innerHTML = '';
-    if (tmpl && tmpl.content) {
-      const clone = tmpl.content.cloneNode(true);
-      // remove ids from cloned nodes to avoid duplicates
-      // append the cloned fragment into a wrapper
-      const wrapper = document.createElement('div');
-      wrapper.appendChild(clone);
-      removeIds(wrapper);
-      // wire up toggles in the cloned panel
-      const toggles = wrapper.querySelectorAll('.toggle');
-      toggles.forEach(t => {
-        t.addEventListener('click', () => t.classList.toggle('on'));
-      });
-
-      // sync values from hidden host to modal fields
-      const keys = ['animalSelect','backgroundSelect','gravitySlider','speedSlider','difficultySelect','obstacleSelect','flyerSelect'];
-      keys.forEach(k => {
-        const src = document.getElementById(k);
-        const dst = wrapper.querySelector('#' + k);
-        if (src && dst) {
-          if (dst.tagName === 'SELECT' || dst.tagName === 'INPUT') dst.value = src.value;
-        }
-      });
-      // sync toggles
-      const soundOn = document.getElementById('soundToggle')?.value === '1';
-      const musicOn = document.getElementById('musicToggle')?.value === '1';
-      const fsOn = document.getElementById('fullscreenToggle')?.value === '1';
-      const soundEl = wrapper.querySelector('[data-key="sound"]'); if (soundEl) soundEl.classList.toggle('on', !!soundOn);
-      const musicEl = wrapper.querySelector('[data-key="music"]'); if (musicEl) musicEl.classList.toggle('on', !!musicOn);
-      const fsEl = wrapper.querySelector('[data-key="fullscreen"]'); if (fsEl) fsEl.classList.toggle('on', !!fsOn);
-
-      modalContent.appendChild(wrapper);
-    } else {
-      modalContent.textContent = 'Settings unavailable';
-    }
-
-    modal.style.display = 'flex';
-    modal.setAttribute('aria-hidden','false');
-    document.body.setAttribute('data-settings-open','true');
-    closeBtn.focus();
-  }
-
-  function closeSettings(){
-    // before closing, copy modal values back into the hidden host so the game uses them
-    const wrapper = modalContent.firstElementChild;
-    if (wrapper) {
-      const keys = ['animalSelect','backgroundSelect','gravitySlider','speedSlider','difficultySelect','obstacleSelect','flyerSelect'];
-      keys.forEach(k => {
-        const src = wrapper.querySelector('#' + k);
-        const dst = document.getElementById(k);
-        if (src && dst) {
-          try { dst.value = src.value; } catch (e) {}
-        }
-      });
-      // toggles
-      const soundEl = wrapper.querySelector('[data-key="sound"]'); if (soundEl) document.getElementById('soundToggle').value = soundEl.classList.contains('on') ? '1' : '0';
-      const musicEl = wrapper.querySelector('[data-key="music"]'); if (musicEl) document.getElementById('musicToggle').value = musicEl.classList.contains('on') ? '1' : '0';
-      const fsEl = wrapper.querySelector('[data-key="fullscreen"]'); if (fsEl) document.getElementById('fullscreenToggle').value = fsEl.classList.contains('on') ? '1' : '0';
-    }
-
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden','true');
-    document.body.removeAttribute('data-settings-open');
-    modalContent.innerHTML = '';
-    icon.focus();
-  }
-
-  // PIN modal elements
-  const pinModal = document.getElementById('pinModal');
-  const pinInput = document.getElementById('pinInput');
-  const pinError = document.getElementById('pinError');
-  const pinSubmit = document.getElementById('pinSubmit');
-  const pinCancel = document.getElementById('pinCancel');
-  const SETTINGS_PIN = '123518';
-  const UNLIM_PIN = '0128'; // unlock unlimited mid-air jumps
-
-  function showPinPrompt(){
-    if (!pinModal) return openSettings();
-    pinError.textContent = '';
-    pinInput.value = '';
-    pinModal.style.display = 'flex';
-    pinModal.setAttribute('aria-hidden','false');
-    pinError.style.color = '';
-    pinInput.focus();
-  }
-  function closePinPrompt(){
-    if (!pinModal) return;
-    pinModal.style.display = 'none';
-    pinModal.setAttribute('aria-hidden','true');
-    pinError.textContent = '';
-    icon.focus();
-  }
-  function verifyPin(){
-    if (!pinInput) return;
-    const val = String(pinInput.value || '').trim();
-    if (val === SETTINGS_PIN){
-      closePinPrompt(); openSettings();
-      return;
-    }
-    if (val === UNLIM_PIN){
-      // enable unlimited air-jumps
-      window.unlimitedAirJumps = true;
-      window.maxAirJumps = Infinity;
-      pinError.style.color = '#8BF58B';
-      pinError.textContent = 'Unlimited jumps enabled';
-      setTimeout(() => { closePinPrompt(); }, 700);
-      return;
-    }
-
-    pinError.style.color = '#ff8b8b';
-    pinError.textContent = 'Incorrect PIN';
-    pinInput.focus(); pinInput.select();
-  }
-
-  icon.addEventListener('click', (e)=>{ e.preventDefault(); showPinPrompt(); });
-  pinSubmit.addEventListener('click', (e)=>{ e.preventDefault(); verifyPin(); });
-  pinCancel.addEventListener('click', (e)=>{ e.preventDefault(); closePinPrompt(); });
-
-  closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); closeSettings(); });
-  modal.addEventListener('click', (e)=>{ if (e.target === modal) closeSettings(); });
-  document.addEventListener('keydown', (e)=>{
-    if (e.key === 'Escape'){
-      if (document.body.hasAttribute('data-settings-open')) closeSettings();
-      else if (pinModal && pinModal.style.display === 'flex') closePinPrompt();
-    }
-    if (e.key === 'Enter'){
-      if (pinModal && pinModal.style.display === 'flex') verifyPin();
-    }
-  });
-
-})();
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js")
-    .then(() => console.log("Service Worker registered"));
-}
-</script>
-
-<script>
-let currentMode = "pc"; // default
-
-document.getElementById("deviceSwitchBtn").addEventListener("click", () => {
-  if (currentMode === "pc") {
-    enableMobileMode();
-    currentMode = "mobile";
-    document.getElementById("deviceSwitchBtn").textContent = "Switch to PC";
-  } else {
-    enablePCMode();
-    currentMode = "pc";
-    document.getElementById("deviceSwitchBtn").textContent = "Switch to Mobile";
-  }
-});
-
-function enableMobileMode() {
-  // Fullscreen
-  if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen();
-  }
-  // Adjust canvas/game size
-  const gameCanvas = document.getElementById("game");
-  if (gameCanvas) {
-    gameCanvas.style.width = "100vw";
-    gameCanvas.style.height = "100vh";
-  }
-  // Touch controls can be enabled here
-  console.log("Mobile mode enabled");
-}
-
-function enablePCMode() {
-  // Exit fullscreen
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  }
-  // Reset canvas/game size
-  const gameCanvas = document.getElementById("game");
-  if (gameCanvas) {
-    gameCanvas.style.width = "800px";
-    gameCanvas.style.height = "600px";
-  }
-  // Keyboard controls remain active
-  console.log("PC mode enabled");
-}
-</script>
-
+    document.getElementById('retryBtn').addEventListener('click', () => {
+      location.reload();
+    });
+    document.getElementById('statusLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Status page coming soon. Link this to your GitHub Pages status or README.');
+    });
+    document.getElementById('releaseNotes').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Release notes will be published at relaunch. Keep an md file ready.');
+    });
+    document.getElementById('contactLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Add your contact or feedback form here (email / GitHub issues).');
+    });
+  </script>
 </body>
 </html>
